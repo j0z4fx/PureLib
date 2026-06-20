@@ -2,6 +2,11 @@ local BASE_URL = "https://raw.githubusercontent.com/j0z4fx/PureLib/72f7c43f60e9b
 
 warn("[PureLib] Loader started")
 
+local compilerTest, compilerError = loadstring("return 1")
+assert(compilerTest, ("PureLib loadstring self-test failed: %s"):format(compilerError))
+assert(compilerTest() == 1, "PureLib loadstring self-test returned an invalid result")
+warn("[PureLib] loadstring self-test passed")
+
 local function loadSource(path)
 	local url = BASE_URL .. path
 	warn(("[PureLib] Fetching %s"):format(url))
