@@ -24,28 +24,14 @@ local function getOption(options, key)
 end
 
 local function parentScreenGui(screenGui)
-	local coreGui = game:GetService("CoreGui")
-	local parentedToCoreGui = pcall(function()
-		screenGui.Parent = coreGui
-	end)
+	if type(gethui) == "function" then
+		local hiddenUi = gethui()
+		assert(hiddenUi, "PureLib: gethui() returned nil")
 
-	if parentedToCoreGui and screenGui.Parent == coreGui then
-		return coreGui
-	end
+		screenGui.Parent = hiddenUi
+		assert(screenGui.Parent == hiddenUi, "PureLib could not mount to gethui()")
 
-	local hiddenUi
-	local foundHiddenUi = pcall(function()
-		hiddenUi = gethui()
-	end)
-
-	if foundHiddenUi and hiddenUi then
-		local parentedToHiddenUi = pcall(function()
-			screenGui.Parent = hiddenUi
-		end)
-
-		if parentedToHiddenUi and screenGui.Parent == hiddenUi then
-			return hiddenUi
-		end
+		return hiddenUi
 	end
 
 	local player = Players.LocalPlayer
