@@ -132,7 +132,7 @@ local function createLoader()
 	statusGradient.Color = ColorSequence.new({
 		ColorSequenceKeypoint.new(0, Theme.Muted),
 		ColorSequenceKeypoint.new(0.25, Theme.Muted),
-		ColorSequenceKeypoint.new(0.45, Theme.AccentHover),
+		ColorSequenceKeypoint.new(0.45, Theme.Text),
 		ColorSequenceKeypoint.new(0.65, Theme.Text),
 		ColorSequenceKeypoint.new(0.85, Theme.Muted),
 		ColorSequenceKeypoint.new(1, Theme.Muted),
