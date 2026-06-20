@@ -33,7 +33,7 @@ function LoaderUI.new(parent)
 	shadow.Name = "Elevation"
 	shadow.AnchorPoint = Vector2.new(0.5, 0.5)
 	shadow.Position = UDim2.new(0.5, 0, 0.5, 6)
-	shadow.Size = UDim2.fromOffset(360, 172)
+	shadow.Size = UDim2.fromOffset(360, 92)
 	shadow.BackgroundColor3 = Color3.new(0, 0, 0)
 	shadow.BackgroundTransparency = 0.55
 	shadow.BorderSizePixel = 0
@@ -44,7 +44,7 @@ function LoaderUI.new(parent)
 	card.Name = "Card"
 	card.AnchorPoint = Vector2.new(0.5, 0.5)
 	card.Position = UDim2.fromScale(0.5, 0.5)
-	card.Size = UDim2.fromOffset(360, 172)
+	card.Size = UDim2.fromOffset(360, 92)
 	card.BackgroundColor3 = Theme.Surface
 	card.BorderSizePixel = 0
 	card.Parent = screenGui
@@ -55,32 +55,10 @@ function LoaderUI.new(parent)
 	stroke.Thickness = 1
 	stroke.Parent = card
 
-	local title = Instance.new("TextLabel")
-	title.BackgroundTransparency = 1
-	title.Position = UDim2.fromOffset(24, 26)
-	title.Size = UDim2.new(1, -48, 0, 24)
-	title.Font = Enum.Font.GothamSemibold
-	title.Text = "PureLib"
-	title.TextColor3 = Theme.Text
-	title.TextSize = 20
-	title.TextXAlignment = Enum.TextXAlignment.Left
-	title.Parent = card
-
-	local subtitle = Instance.new("TextLabel")
-	subtitle.BackgroundTransparency = 1
-	subtitle.Position = UDim2.fromOffset(24, 51)
-	subtitle.Size = UDim2.new(1, -48, 0, 18)
-	subtitle.Font = Enum.Font.Gotham
-	subtitle.Text = "Preparing your interface"
-	subtitle.TextColor3 = Theme.Muted
-	subtitle.TextSize = 13
-	subtitle.TextXAlignment = Enum.TextXAlignment.Left
-	subtitle.Parent = card
-
 	local status = Instance.new("TextLabel")
 	status.Name = "Status"
 	status.BackgroundTransparency = 1
-	status.Position = UDim2.fromOffset(24, 102)
+	status.Position = UDim2.fromOffset(24, 22)
 	status.Size = UDim2.new(1, -88, 0, 18)
 	status.Font = Enum.Font.GothamMedium
 	status.Text = "Preparing interface"
@@ -92,7 +70,7 @@ function LoaderUI.new(parent)
 	local percentage = Instance.new("TextLabel")
 	percentage.Name = "Percentage"
 	percentage.BackgroundTransparency = 1
-	percentage.Position = UDim2.new(1, -64, 0, 102)
+	percentage.Position = UDim2.new(1, -64, 0, 22)
 	percentage.Size = UDim2.fromOffset(40, 18)
 	percentage.Font = Enum.Font.GothamMedium
 	percentage.Text = "0%"
@@ -103,7 +81,7 @@ function LoaderUI.new(parent)
 
 	local rail = Instance.new("Frame")
 	rail.Name = "Progress"
-	rail.Position = UDim2.new(0, 24, 1, -36)
+	rail.Position = UDim2.new(0, 24, 1, -28)
 	rail.Size = UDim2.new(1, -48, 0, 4)
 	rail.BackgroundColor3 = Theme.Surface2
 	rail.BorderSizePixel = 0
