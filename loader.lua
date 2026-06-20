@@ -1,7 +1,8 @@
 local BASE_URL = "https://raw.githubusercontent.com/j0z4fx/PureLib/main/"
+local CACHE_VERSION = "20260620-1"
 
 local function loadSource(path)
-	local url = BASE_URL .. path
+	local url = BASE_URL .. path .. "?v=" .. CACHE_VERSION
 	local source = game:HttpGet(url)
 	local chunk, compileError = loadstring(source, "@PureLib/" .. path)
 
