@@ -24,4 +24,8 @@ function PureLib:CreateWindow(options)
 	return modules.Window.new(options)
 end
 
+PureLib.Window = PureLib:CreateWindow({
+	Title = "PureLib",
+})
+
 return PureLib

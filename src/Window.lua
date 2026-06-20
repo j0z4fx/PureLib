@@ -24,7 +24,11 @@ local function getOption(options, key)
 end
 
 local function parentScreenGui(screenGui)
-	local getHiddenUi = rawget(getfenv(), "gethui")
+	local getHiddenUi
+
+	pcall(function()
+		getHiddenUi = gethui
+	end)
 
 	if type(getHiddenUi) == "function" then
 		local success, hiddenUi = pcall(getHiddenUi)
@@ -35,19 +39,24 @@ local function parentScreenGui(screenGui)
 		end
 	end
 
+	local player = Players.LocalPlayer
+
+	if player then
+		local parentedToPlayerGui = pcall(function()
+			screenGui.Parent = player:WaitForChild("PlayerGui")
+		end)
+
+		if parentedToPlayerGui then
+			return
+		end
+	end
+
 	local coreGui = game:GetService("CoreGui")
 	local parentedToCoreGui = pcall(function()
 		screenGui.Parent = coreGui
 	end)
 
-	if parentedToCoreGui then
-		return
-	end
-
-	local player = Players.LocalPlayer
-	assert(player, "PureLib must be loaded on the client")
-
-	screenGui.Parent = player:WaitForChild("PlayerGui")
+	assert(parentedToCoreGui, "PureLib could not find a valid UI parent")
 end
 
 function Window.new(options)
@@ -58,6 +67,8 @@ function Window.new(options)
 
 	local screenGui = Instance.new("ScreenGui")
 	screenGui.Name = getOption(options, "Name")
+	screenGui.Enabled = true
+	screenGui.DisplayOrder = 100
 	screenGui.IgnoreGuiInset = true
 	screenGui.ResetOnSpawn = false
 	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -68,6 +79,7 @@ function Window.new(options)
 	root.AnchorPoint = Vector2.new(0.5, 0.5)
 	root.Position = UDim2.fromScale(0.5, 0.5)
 	root.Size = getOption(options, "Size")
+	root.Visible = true
 	root.BackgroundColor3 = getOption(options, "BackgroundColor")
 	root.BorderSizePixel = 0
 	root.Parent = screenGui
