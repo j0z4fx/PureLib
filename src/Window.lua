@@ -1,15 +1,33 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
+local Theme = {
+	Bg = Color3.fromRGB(13, 13, 13),
+	Panel = Color3.fromRGB(17, 17, 17),
+	Surface = Color3.fromRGB(23, 23, 23),
+	Surface2 = Color3.fromRGB(31, 31, 31),
+	Surface3 = Color3.fromRGB(39, 39, 39),
+	Border = Color3.fromRGB(51, 51, 51),
+	Border2 = Color3.fromRGB(71, 71, 71),
+	BorderHot = Color3.fromRGB(138, 138, 138),
+	Text = Color3.fromRGB(245, 245, 245),
+	Muted = Color3.fromRGB(184, 184, 184),
+	Dim = Color3.fromRGB(119, 119, 119),
+	Accent = Color3.fromRGB(247, 106, 118),
+	AccentHover = Color3.fromRGB(255, 128, 138),
+	Danger = Color3.fromRGB(255, 92, 103),
+	Success = Color3.fromRGB(85, 210, 143),
+	Warning = Color3.fromRGB(226, 184, 79),
+	Info = Color3.fromRGB(116, 166, 255),
+}
+
 local Window = {}
 Window.__index = Window
 
 local function mountGui(screenGui)
 	if type(gethui) == "function" then
-		warn("[PureLib] Mounting to gethui()")
 		screenGui.Parent = gethui()
 	else
-		warn("[PureLib] Mounting to PlayerGui")
 		local player = Players.LocalPlayer
 		assert(player, "PureLib must run on the client")
 		screenGui.Parent = player:WaitForChild("PlayerGui")
@@ -21,13 +39,13 @@ end
 
 function Window.new(options)
 	options = options or {}
-	warn("[PureLib] Window constructor started")
 
 	local self = setmetatable({}, Window)
 	self._connections = {}
 
 	local screenGui = Instance.new("ScreenGui")
 	screenGui.Name = options.Name or "PureLib"
+	screenGui:SetAttribute("PureLib", true)
 	screenGui.Enabled = true
 	screenGui.DisplayOrder = 100
 	screenGui.IgnoreGuiInset = true
@@ -42,7 +60,7 @@ function Window.new(options)
 	root.AnchorPoint = Vector2.new(0.5, 0.5)
 	root.Position = UDim2.new(0.5, 0, 0.5, 0)
 	root.Size = UDim2.new(0, 800, 0, 450)
-	root.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+	root.BackgroundColor3 = Theme.Surface
 	root.BorderSizePixel = 0
 	root.Parent = screenGui
 
@@ -51,7 +69,7 @@ function Window.new(options)
 	corner.Parent = root
 
 	local stroke = Instance.new("UIStroke")
-	stroke.Color = Color3.fromRGB(75, 75, 90)
+	stroke.Color = Theme.Border
 	stroke.Thickness = 1
 	stroke.Parent = root
 
@@ -116,8 +134,8 @@ function Window.new(options)
 	self.Root = root
 	self.Content = content
 	self.Parent = guiParent
+	self.Theme = Theme
 
-	warn("[PureLib] Window constructor finished")
 	return self
 end
 
