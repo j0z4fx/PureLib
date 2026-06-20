@@ -1,6 +1,8 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 
+warn("[PureLib] Loader started")
+
 local Theme = {
 	Bg = Color3.fromRGB(13, 13, 13),
 	Panel = Color3.fromRGB(17, 17, 17),
@@ -179,9 +181,9 @@ local function createLoader()
 end
 
 cleanup()
+warn("[PureLib] Previous instances cleaned")
 local loader = createLoader()
 loader:Set("Loading components", 0.38)
-task.wait(0.12)
 
 local Window = {}
 Window.__index = Window
@@ -293,11 +295,14 @@ local PureLib = {
 }
 
 function PureLib:CreateWindow(options)
-	return Window.new(options)
+	warn("[PureLib] Creating window")
+	local window = Window.new(options)
+	loader:Set("Ready", 1)
+	task.delay(0.2, function()
+		loader:Destroy()
+	end)
+	return window
 end
 
-loader:Set("Ready", 1)
-task.wait(0.2)
-loader:Destroy()
-
+warn("[PureLib] Loader ready")
 return PureLib
