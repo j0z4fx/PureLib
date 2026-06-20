@@ -116,27 +116,10 @@ local function createLoader()
 	stroke.Thickness = 1
 	stroke.Parent = card
 
-	local mark = Instance.new("Frame")
-	mark.Position = UDim2.fromOffset(24, 24)
-	mark.Size = UDim2.fromOffset(48, 48)
-	mark.BackgroundColor3 = Theme.Surface3
-	mark.BorderSizePixel = 0
-	mark.Parent = card
-	corner(mark, 14)
-
-	local glyph = Instance.new("TextLabel")
-	glyph.BackgroundTransparency = 1
-	glyph.Size = UDim2.fromScale(1, 1)
-	glyph.Font = Enum.Font.GothamBold
-	glyph.Text = "P"
-	glyph.TextColor3 = Theme.AccentHover
-	glyph.TextSize = 22
-	glyph.Parent = mark
-
 	local title = Instance.new("TextLabel")
 	title.BackgroundTransparency = 1
-	title.Position = UDim2.fromOffset(88, 26)
-	title.Size = UDim2.new(1, -112, 0, 24)
+	title.Position = UDim2.fromOffset(24, 26)
+	title.Size = UDim2.new(1, -48, 0, 24)
 	title.Font = Enum.Font.GothamSemibold
 	title.Text = "PureLib"
 	title.TextColor3 = Theme.Text
@@ -146,8 +129,8 @@ local function createLoader()
 
 	local subtitle = Instance.new("TextLabel")
 	subtitle.BackgroundTransparency = 1
-	subtitle.Position = UDim2.fromOffset(88, 51)
-	subtitle.Size = UDim2.new(1, -112, 0, 18)
+	subtitle.Position = UDim2.fromOffset(24, 51)
+	subtitle.Size = UDim2.new(1, -48, 0, 18)
 	subtitle.Font = Enum.Font.Gotham
 	subtitle.Text = "Preparing your interface"
 	subtitle.TextColor3 = Theme.Muted
