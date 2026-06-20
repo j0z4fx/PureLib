@@ -65,7 +65,7 @@ function Window.new(options)
 	root.Parent = screenGui
 
 	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 10)
+	corner.CornerRadius = UDim.new(0, 12)
 	corner.Parent = root
 
 	local stroke = Instance.new("UIStroke")

@@ -234,7 +234,7 @@ function Window.new(options)
 	root.BackgroundColor3 = Theme.Surface
 	root.BorderSizePixel = 0
 	root.Parent = screenGui
-	corner(root, 10)
+	corner(root, 12)
 
 	local stroke = Instance.new("UIStroke")
 	stroke.Color = Theme.Border
