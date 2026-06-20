@@ -24,39 +24,38 @@ local function getOption(options, key)
 end
 
 local function parentScreenGui(screenGui)
-	local getHiddenUi
-
-	pcall(function()
-		getHiddenUi = gethui
-	end)
-
-	if type(getHiddenUi) == "function" then
-		local success, hiddenUi = pcall(getHiddenUi)
-
-		if success and hiddenUi then
-			screenGui.Parent = hiddenUi
-			return
-		end
-	end
-
-	local player = Players.LocalPlayer
-
-	if player then
-		local parentedToPlayerGui = pcall(function()
-			screenGui.Parent = player:WaitForChild("PlayerGui")
-		end)
-
-		if parentedToPlayerGui then
-			return
-		end
-	end
-
 	local coreGui = game:GetService("CoreGui")
 	local parentedToCoreGui = pcall(function()
 		screenGui.Parent = coreGui
 	end)
 
-	assert(parentedToCoreGui, "PureLib could not find a valid UI parent")
+	if parentedToCoreGui and screenGui.Parent == coreGui then
+		return coreGui
+	end
+
+	local hiddenUi
+	local foundHiddenUi = pcall(function()
+		hiddenUi = gethui()
+	end)
+
+	if foundHiddenUi and hiddenUi then
+		local parentedToHiddenUi = pcall(function()
+			screenGui.Parent = hiddenUi
+		end)
+
+		if parentedToHiddenUi and screenGui.Parent == hiddenUi then
+			return hiddenUi
+		end
+	end
+
+	local player = Players.LocalPlayer
+	assert(player, "PureLib must be executed on the client")
+
+	local playerGui = player:WaitForChild("PlayerGui")
+	screenGui.Parent = playerGui
+	assert(screenGui.Parent == playerGui, "PureLib could not parent its ScreenGui")
+
+	return playerGui
 end
 
 function Window.new(options)
@@ -73,6 +72,8 @@ function Window.new(options)
 	screenGui.ResetOnSpawn = false
 	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
+	local uiParent = parentScreenGui(screenGui)
+
 	local root = Instance.new("Frame")
 	root.Name = "Window"
 	root.Active = true
@@ -87,6 +88,12 @@ function Window.new(options)
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0, 10)
 	corner.Parent = root
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(75, 75, 90)
+	stroke.Thickness = 1
+	stroke.Transparency = 0
+	stroke.Parent = root
 
 	local titleBar = Instance.new("Frame")
 	titleBar.Name = "TitleBar"
@@ -179,8 +186,7 @@ function Window.new(options)
 	self.Root = root
 	self.TitleBar = titleBar
 	self.Content = content
-
-	parentScreenGui(screenGui)
+	self.Parent = uiParent
 
 	return self
 end

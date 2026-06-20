@@ -28,4 +28,14 @@ PureLib.Window = PureLib:CreateWindow({
 	Title = "PureLib",
 })
 
+print(("[PureLib] Window created in %s"):format(PureLib.Window.Parent:GetFullName()))
+
+pcall(function()
+	game:GetService("StarterGui"):SetCore("SendNotification", {
+		Title = "PureLib",
+		Text = "Window loaded successfully",
+		Duration = 4,
+	})
+end)
+
 return PureLib
