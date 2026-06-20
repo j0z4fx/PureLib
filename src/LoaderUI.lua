@@ -1,3 +1,5 @@
+local TweenService = game:GetService("TweenService")
+
 local Theme = {
 	Panel = Color3.fromRGB(17, 17, 17),
 	Surface = Color3.fromRGB(23, 23, 23),
@@ -67,6 +69,24 @@ function LoaderUI.new(parent)
 	status.TextXAlignment = Enum.TextXAlignment.Left
 	status.Parent = card
 
+	local statusGradient = Instance.new("UIGradient")
+	statusGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Theme.Muted),
+		ColorSequenceKeypoint.new(0.42, Theme.Muted),
+		ColorSequenceKeypoint.new(0.5, Theme.AccentHover),
+		ColorSequenceKeypoint.new(0.58, Theme.Text),
+		ColorSequenceKeypoint.new(1, Theme.Muted),
+	})
+	statusGradient.Offset = Vector2.new(-1, 0)
+	statusGradient.Parent = status
+
+	local statusTween = TweenService:Create(
+		statusGradient,
+		TweenInfo.new(1.6, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1),
+		{ Offset = Vector2.new(1, 0) }
+	)
+	statusTween:Play()
+
 	local percentage = Instance.new("TextLabel")
 	percentage.Name = "Percentage"
 	percentage.BackgroundTransparency = 1
@@ -99,6 +119,7 @@ function LoaderUI.new(parent)
 	local self = setmetatable({}, LoaderUI)
 	self.ScreenGui = screenGui
 	self.Status = status
+	self.StatusTween = statusTween
 	self.Percentage = percentage
 	self.Fill = fill
 	return self
@@ -118,6 +139,7 @@ function LoaderUI:Set(status, progress)
 end
 
 function LoaderUI:Destroy()
+	self.StatusTween:Cancel()
 	self.ScreenGui:Destroy()
 end
 

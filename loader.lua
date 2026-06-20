@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 warn("[PureLib] Loader started")
@@ -127,6 +128,24 @@ local function createLoader()
 	status.TextXAlignment = Enum.TextXAlignment.Left
 	status.Parent = card
 
+	local statusGradient = Instance.new("UIGradient")
+	statusGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Theme.Muted),
+		ColorSequenceKeypoint.new(0.42, Theme.Muted),
+		ColorSequenceKeypoint.new(0.5, Theme.AccentHover),
+		ColorSequenceKeypoint.new(0.58, Theme.Text),
+		ColorSequenceKeypoint.new(1, Theme.Muted),
+	})
+	statusGradient.Offset = Vector2.new(-1, 0)
+	statusGradient.Parent = status
+
+	local statusTween = TweenService:Create(
+		statusGradient,
+		TweenInfo.new(1.6, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1),
+		{ Offset = Vector2.new(1, 0) }
+	)
+	statusTween:Play()
+
 	local percentage = Instance.new("TextLabel")
 	percentage.BackgroundTransparency = 1
 	percentage.Position = UDim2.new(1, -64, 0, 22)
@@ -168,6 +187,7 @@ local function createLoader()
 			)
 		end,
 		Destroy = function()
+			statusTween:Cancel()
 			screenGui:Destroy()
 		end,
 	}
