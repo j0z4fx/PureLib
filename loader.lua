@@ -95,7 +95,7 @@ local function createLoader()
 	card.Name = "Card"
 	card.AnchorPoint = Vector2.new(0.5, 0.5)
 	card.Position = UDim2.fromScale(0.5, 0.5)
-	card.Size = UDim2.fromOffset(360, 72)
+	card.Size = UDim2.fromOffset(360, 76)
 	card.BackgroundColor3 = Theme.Surface
 	card.BorderSizePixel = 0
 	card.Parent = screenGui
@@ -144,18 +144,18 @@ local function createLoader()
 
 	local rail = Instance.new("Frame")
 	rail.Position = UDim2.fromOffset(16, 52)
-	rail.Size = UDim2.new(1, -32, 0, 4)
+	rail.Size = UDim2.new(1, -32, 0, 8)
 	rail.BackgroundColor3 = Theme.Surface3
 	rail.BorderSizePixel = 0
 	rail.Parent = card
-	corner(rail, 2)
+	corner(rail, 4)
 
 	local fill = Instance.new("Frame")
 	fill.Size = UDim2.fromScale(0, 1)
 	fill.BackgroundColor3 = Theme.Accent
 	fill.BorderSizePixel = 0
 	fill.Parent = rail
-	corner(fill, 2)
+	corner(fill, 4)
 
 	local stop = Instance.new("Frame")
 	stop.Name = "Stop"
