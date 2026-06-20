@@ -81,6 +81,49 @@ local function corner(parent, radius)
 	item.Parent = parent
 end
 
+-- C3 Bézier joined to straight edges; C3 continuity implies G3 continuity.
+local G3_INSETS = {
+	0.7188, 0.5957, 0.5139, 0.448, 0.3914, 0.3413,
+	0.2962, 0.2553, 0.218, 0.1841, 0.1532, 0.1252,
+	0.1002, 0.0781, 0.0588, 0.0425, 0.029, 0.0185,
+	0.0106, 0.0053, 0.0022, 0.0006, 0.0001, 0,
+}
+
+local function g3Surface(parent, color, radius, position, size)
+	local surface = Instance.new("Frame")
+	surface.BackgroundTransparency = 1
+	surface.BorderSizePixel = 0
+	surface.Position = position or UDim2.fromOffset(0, 0)
+	surface.Size = size or UDim2.fromScale(1, 1)
+	surface.Parent = parent
+
+	local middle = Instance.new("Frame")
+	middle.Position = UDim2.fromOffset(0, radius)
+	middle.Size = UDim2.new(1, 0, 1, -radius * 2)
+	middle.BackgroundColor3 = color
+	middle.BorderSizePixel = 0
+	middle.Parent = surface
+
+	local rowHeight = radius / #G3_INSETS
+	for index, ratio in ipairs(G3_INSETS) do
+		local inset = radius * ratio
+		local y = (index - 1) * rowHeight
+
+		for _, top in ipairs({ true, false }) do
+			local row = Instance.new("Frame")
+			row.Position = top
+				and UDim2.new(0, inset, 0, y)
+				or UDim2.new(0, inset, 1, -y - rowHeight)
+			row.Size = UDim2.new(1, -inset * 2, 0, rowHeight + 0.05)
+			row.BackgroundColor3 = color
+			row.BorderSizePixel = 0
+			row.Parent = surface
+		end
+	end
+
+	return surface
+end
+
 local function createLoader()
 	local screenGui = Instance.new("ScreenGui")
 	screenGui.Name = "PureLibLoader"
@@ -96,10 +139,10 @@ local function createLoader()
 	card.AnchorPoint = Vector2.new(0.5, 0.5)
 	card.Position = UDim2.fromScale(0.5, 0.5)
 	card.Size = UDim2.fromOffset(360, 76)
-	card.BackgroundColor3 = Theme.Surface
+	card.BackgroundTransparency = 1
 	card.BorderSizePixel = 0
 	card.Parent = screenGui
-	corner(card, 12)
+	g3Surface(card, Theme.Surface, 12)
 
 	local status = Instance.new("TextLabel")
 	status.BackgroundTransparency = 1
@@ -231,15 +274,11 @@ function Window.new(options)
 	root.AnchorPoint = Vector2.new(0.5, 0.5)
 	root.Position = UDim2.new(0.5, 0, 0.5, 0)
 	root.Size = UDim2.new(0, 800, 0, 450)
-	root.BackgroundColor3 = Theme.Surface
+	root.BackgroundTransparency = 1
 	root.BorderSizePixel = 0
 	root.Parent = screenGui
-	corner(root, 12)
-
-	local stroke = Instance.new("UIStroke")
-	stroke.Color = Theme.Border
-	stroke.Thickness = 1
-	stroke.Parent = root
+	g3Surface(root, Theme.Border, 12)
+	g3Surface(root, Theme.Surface, 11, UDim2.fromOffset(1, 1), UDim2.new(1, -2, 1, -2))
 
 	local content = Instance.new("Frame")
 	content.Name = "Content"
