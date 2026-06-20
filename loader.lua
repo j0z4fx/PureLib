@@ -1,4 +1,4 @@
-local BASE_URL = "https://raw.githubusercontent.com/j0z4fx/PureLib/72f7c43f60e9bb354e213f11a487909d42fd0be3/"
+local BASE_URL = "https://raw.githubusercontent.com/j0z4fx/PureLib/37ef02a18b7415dc420f405758e3df7893c72e31/"
 
 warn("[PureLib] Loader started")
 
