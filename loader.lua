@@ -1,4 +1,4 @@
-local BASE_URL = "https://raw.githubusercontent.com/j0z4fx/PureLib/35da96343a4facdce456690121ec2269b6140f48/"
+local BASE_URL = "https://raw.githubusercontent.com/j0z4fx/PureLib/3b7edf10e5c0f0c1aed408f9cb053955a3737d7b/"
 
 local function loadSource(path)
 	local url = BASE_URL .. path
