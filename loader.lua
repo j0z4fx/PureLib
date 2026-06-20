@@ -3,6 +3,8 @@ local UserInputService = game:GetService("UserInputService")
 
 warn("[PureLib] Loader started")
 
+local FakeLoadDelay = math.max(0, tonumber(fakeLoadDelay) or 0)
+
 local Theme = {
 	Bg = Color3.fromRGB(13, 13, 13),
 	Panel = Color3.fromRGB(17, 17, 17),
@@ -183,7 +185,7 @@ end
 cleanup()
 warn("[PureLib] Previous instances cleaned")
 local loader = createLoader()
-loader:Set("Loading components", 0.38)
+loader:Set("Previous instances cleaned", 0.25)
 
 local Window = {}
 Window.__index = Window
@@ -297,10 +299,33 @@ local PureLib = {
 function PureLib:CreateWindow(options)
 	warn("[PureLib] Creating window")
 	local window = Window.new(options)
-	loader:Set("Ready", 1)
-	task.delay(0.2, function()
-		loader:Destroy()
-	end)
+	local activeLoader = loader
+	loader = nil
+
+	if activeLoader then
+		window.Root.Visible = false
+
+		task.spawn(function()
+			local steps = {
+				"Previous instances cleaned",
+				"Loader mounted",
+				"Components ready",
+				"Interface ready",
+			}
+			local stepDelay = FakeLoadDelay / #steps
+
+			for index, step in ipairs(steps) do
+				activeLoader:Set(step, index / #steps)
+				if stepDelay > 0 then
+					task.wait(stepDelay)
+				end
+			end
+
+			window.Root.Visible = true
+			activeLoader:Destroy()
+		end)
+	end
+
 	return window
 end
 
