@@ -55,43 +55,10 @@ function Window.new(options)
 	stroke.Thickness = 1
 	stroke.Parent = root
 
-	local titleBar = Instance.new("Frame")
-	titleBar.Name = "TitleBar"
-	titleBar.Active = true
-	titleBar.Size = UDim2.new(1, 0, 0, 48)
-	titleBar.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
-	titleBar.BorderSizePixel = 0
-	titleBar.Parent = root
-
-	local titleCorner = Instance.new("UICorner")
-	titleCorner.CornerRadius = UDim.new(0, 10)
-	titleCorner.Parent = titleBar
-
-	local titleFill = Instance.new("Frame")
-	titleFill.Name = "BottomFill"
-	titleFill.AnchorPoint = Vector2.new(0, 1)
-	titleFill.Position = UDim2.new(0, 0, 1, 0)
-	titleFill.Size = UDim2.new(1, 0, 0, 10)
-	titleFill.BackgroundColor3 = titleBar.BackgroundColor3
-	titleFill.BorderSizePixel = 0
-	titleFill.Parent = titleBar
-
-	local title = Instance.new("TextLabel")
-	title.Name = "Title"
-	title.Position = UDim2.new(0, 18, 0, 0)
-	title.Size = UDim2.new(1, -36, 1, 0)
-	title.BackgroundTransparency = 1
-	title.Font = Enum.Font.GothamSemibold
-	title.Text = options.Title or "PureLib"
-	title.TextColor3 = Color3.fromRGB(240, 240, 245)
-	title.TextSize = 16
-	title.TextXAlignment = Enum.TextXAlignment.Left
-	title.Parent = titleBar
-
 	local content = Instance.new("Frame")
 	content.Name = "Content"
-	content.Position = UDim2.new(0, 0, 0, 48)
-	content.Size = UDim2.new(1, 0, 1, -48)
+	content.Position = UDim2.new(0, 0, 0, 0)
+	content.Size = UDim2.new(1, 0, 1, 0)
 	content.BackgroundTransparency = 1
 	content.BorderSizePixel = 0
 	content.ClipsDescendants = true
@@ -102,7 +69,7 @@ function Window.new(options)
 	local startPosition = nil
 	local dragInput = nil
 
-	local beganConnection = titleBar.InputBegan:Connect(function(input)
+	local beganConnection = root.InputBegan:Connect(function(input)
 		local inputType = input.UserInputType
 
 		if inputType == Enum.UserInputType.MouseButton1 or inputType == Enum.UserInputType.Touch then
@@ -122,7 +89,7 @@ function Window.new(options)
 	end)
 	table.insert(self._connections, endedConnection)
 
-	local changedConnection = titleBar.InputChanged:Connect(function(input)
+	local changedConnection = root.InputChanged:Connect(function(input)
 		local inputType = input.UserInputType
 
 		if inputType == Enum.UserInputType.MouseMovement or inputType == Enum.UserInputType.Touch then
@@ -147,7 +114,6 @@ function Window.new(options)
 
 	self.ScreenGui = screenGui
 	self.Root = root
-	self.TitleBar = titleBar
 	self.Content = content
 	self.Parent = guiParent
 
