@@ -81,46 +81,54 @@ local function corner(parent, radius)
 	item.Parent = parent
 end
 
--- C3 Bézier joined to straight edges; C3 continuity implies G3 continuity.
-local G3_INSETS = {
-	0.6667, 0.5, 0.3333, 0.25, 0.1667, 0.1667,
-	0.0833, 0.0833, 0, 0, 0, 0,
-}
+local G3_PNG = "\137\080\078\071\013\010\026\010\000\000\000\013\073\072\068\082\000\000\000\064\000\000\000\064\008\006\000\000\000\170\105\113\222\000\000\002\113\073\068\065\084\120\218\237\155\177\106\020\081\020\134\191\115\118\023\212\198\042\004\193\066\132\045\132\016\108\036\125\108\076\019\201\059\216\228\049\082\153\046\047\224\059\132\088\217\196\062\216\072\008\088\044\136\197\130\132\052\049\098\022\178\051\115\044\230\220\120\051\121\128\117\231\158\031\046\195\050\119\135\249\191\123\238\157\025\184\191\208\145\153\009\160\034\082\251\111\005\094\002\175\128\117\224\057\176\002\060\001\020\120\012\060\100\049\154\001\191\128\006\248\009\092\000\223\129\083\224\011\240\085\068\026\247\049\000\026\017\177\252\002\210\053\159\058\152\217\051\224\029\176\013\188\000\134\044\151\042\224\027\240\017\248\032\034\063\186\030\187\035\175\126\028\153\217\123\051\187\178\187\170\205\172\242\099\109\102\141\183\069\043\221\071\221\185\199\092\087\238\105\148\123\189\173\000\047\123\128\071\192\017\240\058\163\168\222\150\081\141\183\084\189\199\192\091\224\026\064\068\076\210\156\247\246\009\216\004\230\254\039\161\031\050\031\204\017\240\025\120\147\224\104\182\224\237\185\249\027\239\216\023\243\169\210\071\238\109\019\216\115\207\154\166\192\083\096\226\157\180\103\230\187\149\208\120\133\143\069\100\154\230\246\046\240\192\059\244\213\124\170\004\115\175\187\000\234\207\199\029\063\161\244\095\234\094\119\204\108\048\244\151\155\113\207\071\190\091\005\226\158\215\021\216\240\021\191\046\004\130\184\215\033\176\161\192\026\229\106\077\189\020\074\213\088\253\195\134\130\214\128\220\235\138\002\171\005\003\088\213\194\140\223\003\033\102\118\189\192\239\249\069\107\038\102\102\005\087\064\017\111\126\001\032\000\004\128\000\016\000\002\064\000\008\000\001\032\000\004\128\000\016\000\002\064\000\008\000\001\032\000\004\128\000\016\000\002\064\000\008\000\001\032\000\004\128\000\128\210\110\057\047\085\051\005\046\249\183\139\178\020\037\175\151\090\152\241\123\032\020\056\047\184\002\206\149\054\102\082\042\128\011\165\221\037\094\170\038\010\156\021\012\224\076\129\019\218\052\197\160\144\105\096\238\181\002\078\148\054\098\054\241\019\165\000\048\247\124\154\226\050\135\180\027\038\155\002\000\052\238\245\080\068\234\136\204\152\217\064\068\166\192\129\207\141\121\143\071\127\238\030\015\068\100\106\102\131\136\205\121\140\180\241\014\219\180\225\194\020\155\171\150\124\093\072\190\082\108\238\216\061\086\041\071\172\120\130\178\061\200\031\096\011\216\007\126\123\021\104\118\177\058\075\099\254\047\079\013\203\230\118\126\143\233\107\119\232\094\246\129\045\247\120\155\031\046\062\060\045\165\199\231\255\002\010\047\202\027\240\211\216\233\000\000\000\000\073\069\078\068\174\066\096\130"
+local g3Asset
+
+local function getG3Asset()
+	if g3Asset ~= nil then
+		return g3Asset or nil
+	end
+
+	local assetLoader = type(getcustomasset) == "function" and getcustomasset
+		or type(getsynasset) == "function" and getsynasset
+
+	if type(writefile) ~= "function" or not assetLoader then
+		g3Asset = false
+		return nil
+	end
+
+	local path = "PureLib-continuous-corners.png"
+	local wrote = pcall(writefile, path, G3_PNG)
+	local loaded, asset = wrote and pcall(assetLoader, path)
+	g3Asset = loaded and asset or false
+	return g3Asset or nil
+end
 
 local function g3Surface(parent, color, radius, position, size)
+	local asset = getG3Asset()
+
+	if asset then
+		local surface = Instance.new("ImageLabel")
+		surface.BackgroundTransparency = 1
+		surface.BorderSizePixel = 0
+		surface.Image = asset
+		surface.ImageColor3 = color
+		surface.Position = position or UDim2.fromOffset(0, 0)
+		surface.ScaleType = Enum.ScaleType.Slice
+		surface.SliceCenter = Rect.new(24, 24, 40, 40)
+		surface.SliceScale = radius / 24
+		surface.Size = size or UDim2.fromScale(1, 1)
+		surface.Parent = parent
+		return surface
+	end
+
 	local surface = Instance.new("Frame")
-	surface.BackgroundTransparency = 1
+	surface.BackgroundColor3 = color
 	surface.BorderSizePixel = 0
 	surface.Position = position or UDim2.fromOffset(0, 0)
 	surface.Size = size or UDim2.fromScale(1, 1)
 	surface.Parent = parent
-
-	local middle = Instance.new("Frame")
-	middle.Position = UDim2.fromOffset(0, radius)
-	middle.Size = UDim2.new(1, 0, 1, -radius * 2)
-	middle.BackgroundColor3 = color
-	middle.BorderSizePixel = 0
-	middle.Parent = surface
-
-	local rowCount = math.max(1, math.floor(radius + 0.5))
-	local rowHeight = radius / rowCount
-	for index = 1, rowCount do
-		local ratio = G3_INSETS[math.min(#G3_INSETS, math.ceil(index * #G3_INSETS / rowCount))]
-		local inset = radius * ratio
-		local y = (index - 1) * rowHeight
-
-		for _, top in ipairs({ true, false }) do
-			local row = Instance.new("Frame")
-			row.Position = top
-				and UDim2.new(0, inset, 0, y)
-				or UDim2.new(0, inset, 1, -y - rowHeight)
-			row.Size = UDim2.new(1, -inset * 2, 0, rowHeight)
-			row.BackgroundColor3 = color
-			row.BorderSizePixel = 0
-			row.Parent = surface
-		end
-	end
-
+	corner(surface, radius)
 	return surface
 end
 

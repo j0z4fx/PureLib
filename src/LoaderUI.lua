@@ -1,4 +1,5 @@
 local TweenService = game:GetService("TweenService")
+local g3Surface = require(script.Parent.ContinuousCorner)
 
 local Theme = {
 	Panel = Color3.fromRGB(17, 17, 17),
@@ -20,46 +21,6 @@ local function corner(parent, radius)
 	local item = Instance.new("UICorner")
 	item.CornerRadius = UDim.new(0, radius)
 	item.Parent = parent
-end
-
--- C3 Bézier joined to straight edges; C3 continuity implies G3 continuity.
-local G3_INSETS = {
-	0.6667, 0.5, 0.3333, 0.25, 0.1667, 0.1667,
-	0.0833, 0.0833, 0, 0, 0, 0,
-}
-
-local function g3Surface(parent, color, radius)
-	local surface = Instance.new("Frame")
-	surface.BackgroundTransparency = 1
-	surface.BorderSizePixel = 0
-	surface.Size = UDim2.fromScale(1, 1)
-	surface.Parent = parent
-
-	local middle = Instance.new("Frame")
-	middle.Position = UDim2.fromOffset(0, radius)
-	middle.Size = UDim2.new(1, 0, 1, -radius * 2)
-	middle.BackgroundColor3 = color
-	middle.BorderSizePixel = 0
-	middle.Parent = surface
-
-	local rowCount = math.max(1, math.floor(radius + 0.5))
-	local rowHeight = radius / rowCount
-	for index = 1, rowCount do
-		local ratio = G3_INSETS[math.min(#G3_INSETS, math.ceil(index * #G3_INSETS / rowCount))]
-		local inset = radius * ratio
-		local y = (index - 1) * rowHeight
-
-		for _, top in ipairs({ true, false }) do
-			local row = Instance.new("Frame")
-			row.Position = top
-				and UDim2.new(0, inset, 0, y)
-				or UDim2.new(0, inset, 1, -y - rowHeight)
-			row.Size = UDim2.new(1, -inset * 2, 0, rowHeight)
-			row.BackgroundColor3 = color
-			row.BorderSizePixel = 0
-			row.Parent = surface
-		end
-	end
 end
 
 function LoaderUI.new(parent)
