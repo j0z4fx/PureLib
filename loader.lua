@@ -145,10 +145,9 @@ local function createLoader()
 	local rail = Instance.new("Frame")
 	rail.Position = UDim2.fromOffset(16, 52)
 	rail.Size = UDim2.new(1, -32, 0, 8)
-	rail.BackgroundColor3 = Theme.Surface3
+	rail.BackgroundTransparency = 1
 	rail.BorderSizePixel = 0
 	rail.Parent = card
-	corner(rail, 4)
 
 	local fill = Instance.new("Frame")
 	fill.Size = UDim2.fromScale(0, 1)
@@ -157,24 +156,37 @@ local function createLoader()
 	fill.Parent = rail
 	corner(fill, 4)
 
-	local stop = Instance.new("Frame")
-	stop.Name = "Stop"
-	stop.AnchorPoint = Vector2.new(1, 0.5)
-	stop.Position = UDim2.new(1, 0, 0.5, 0)
-	stop.Size = UDim2.fromOffset(4, 4)
-	stop.BackgroundColor3 = Theme.Muted
-	stop.BorderSizePixel = 0
-	stop.Parent = rail
-	corner(stop, 2)
+	local track = Instance.new("Frame")
+	track.Position = UDim2.fromOffset(4, 0)
+	track.Size = UDim2.new(1, -4, 1, 0)
+	track.BackgroundColor3 = Theme.Surface3
+	track.BorderSizePixel = 0
+	track.Parent = rail
+	corner(track, 4)
 
 	return {
 		ScreenGui = screenGui,
 		Set = function(_, text, progress)
 			progress = math.clamp(progress, 0, 1)
+			local gap = progress > 0 and progress < 1 and 4 or 0
 			status.Text = text
 			percentage.Text = string.format("%d%%", math.floor(progress * 100 + 0.5))
 			fill:TweenSize(
-				UDim2.fromScale(progress, 1),
+				UDim2.new(progress, -progress * gap, 1, 0),
+				Enum.EasingDirection.Out,
+				Enum.EasingStyle.Quad,
+				0.3,
+				true
+			)
+			track:TweenPosition(
+				UDim2.new(progress, (1 - progress) * gap, 0, 0),
+				Enum.EasingDirection.Out,
+				Enum.EasingStyle.Quad,
+				0.3,
+				true
+			)
+			track:TweenSize(
+				UDim2.new(1 - progress, -(1 - progress) * gap, 1, 0),
 				Enum.EasingDirection.Out,
 				Enum.EasingStyle.Quad,
 				0.3,
