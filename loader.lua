@@ -94,37 +94,38 @@ local function createLoader()
 	local shadow = Instance.new("Frame")
 	shadow.Name = "Elevation"
 	shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-	shadow.Position = UDim2.new(0.5, 0, 0.5, 6)
-	shadow.Size = UDim2.fromOffset(360, 92)
+	shadow.Position = UDim2.new(0.5, 0, 0.5, 8)
+	shadow.Size = UDim2.fromOffset(368, 112)
 	shadow.BackgroundColor3 = Color3.new(0, 0, 0)
-	shadow.BackgroundTransparency = 0.55
+	shadow.BackgroundTransparency = 0.48
 	shadow.BorderSizePixel = 0
 	shadow.Parent = screenGui
-	corner(shadow, 16)
+	corner(shadow, 30)
 
 	local card = Instance.new("Frame")
 	card.Name = "Card"
 	card.AnchorPoint = Vector2.new(0.5, 0.5)
 	card.Position = UDim2.fromScale(0.5, 0.5)
-	card.Size = UDim2.fromOffset(360, 92)
-	card.BackgroundColor3 = Theme.Surface
+	card.Size = UDim2.fromOffset(360, 104)
+	card.BackgroundColor3 = Theme.Surface2
 	card.BorderSizePixel = 0
 	card.Parent = screenGui
-	corner(card, 16)
+	corner(card, 28)
 
 	local stroke = Instance.new("UIStroke")
-	stroke.Color = Theme.Border
+	stroke.Color = Theme.Border2
+	stroke.Transparency = 0.25
 	stroke.Thickness = 1
 	stroke.Parent = card
 
 	local status = Instance.new("TextLabel")
 	status.BackgroundTransparency = 1
-	status.Position = UDim2.fromOffset(24, 22)
+	status.Position = UDim2.fromOffset(28, 24)
 	status.Size = UDim2.new(1, -88, 0, 18)
-	status.Font = Enum.Font.GothamMedium
+	status.Font = Enum.Font.GothamSemibold
 	status.Text = "Preparing interface"
 	status.TextColor3 = Theme.Muted
-	status.TextSize = 12
+	status.TextSize = 13
 	status.TextXAlignment = Enum.TextXAlignment.Left
 	status.Parent = card
 
@@ -149,29 +150,29 @@ local function createLoader()
 
 	local percentage = Instance.new("TextLabel")
 	percentage.BackgroundTransparency = 1
-	percentage.Position = UDim2.new(1, -64, 0, 22)
+	percentage.Position = UDim2.new(1, -68, 0, 24)
 	percentage.Size = UDim2.fromOffset(40, 18)
 	percentage.Font = Enum.Font.GothamMedium
 	percentage.Text = "0%"
 	percentage.TextColor3 = Theme.Muted
-	percentage.TextSize = 12
+	percentage.TextSize = 13
 	percentage.TextXAlignment = Enum.TextXAlignment.Right
 	percentage.Parent = card
 
 	local rail = Instance.new("Frame")
-	rail.Position = UDim2.new(0, 24, 1, -28)
-	rail.Size = UDim2.new(1, -48, 0, 4)
-	rail.BackgroundColor3 = Theme.Surface2
+	rail.Position = UDim2.new(0, 28, 1, -32)
+	rail.Size = UDim2.new(1, -56, 0, 8)
+	rail.BackgroundColor3 = Theme.Surface3
 	rail.BorderSizePixel = 0
 	rail.Parent = card
-	corner(rail, 2)
+	corner(rail, 4)
 
 	local fill = Instance.new("Frame")
 	fill.Size = UDim2.fromScale(0, 1)
 	fill.BackgroundColor3 = Theme.Accent
 	fill.BorderSizePixel = 0
 	fill.Parent = rail
-	corner(fill, 2)
+	corner(fill, 4)
 
 	return {
 		ScreenGui = screenGui,
@@ -182,8 +183,8 @@ local function createLoader()
 			fill:TweenSize(
 				UDim2.fromScale(progress, 1),
 				Enum.EasingDirection.Out,
-				Enum.EasingStyle.Quad,
-				0.16,
+				Enum.EasingStyle.Quint,
+				0.28,
 				true
 			)
 		end,
