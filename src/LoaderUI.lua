@@ -41,7 +41,7 @@ function LoaderUI.new(parent)
 	card.BackgroundTransparency = 1
 	card.BorderSizePixel = 0
 	card.Parent = screenGui
-	g3Surface(card, Theme.Surface, 12)
+	g3Surface(card, Theme.Surface, 18)
 
 	local status = Instance.new("TextLabel")
 	status.Name = "Status"

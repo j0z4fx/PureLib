@@ -65,8 +65,8 @@ function Window.new(options)
 	root.BorderSizePixel = 0
 	root.Parent = screenGui
 
-	g3Surface(root, Theme.Border, 12)
-	g3Surface(root, Theme.Surface, 11, UDim2.fromOffset(1, 1), UDim2.new(1, -2, 1, -2))
+	g3Surface(root, Theme.Border, 18)
+	g3Surface(root, Theme.Surface, 17, UDim2.fromOffset(1, 1), UDim2.new(1, -2, 1, -2))
 
 	local content = Instance.new("Frame")
 	content.Name = "Content"
