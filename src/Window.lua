@@ -25,14 +25,19 @@ end
 
 local function parentScreenGui(screenGui)
 	if type(gethui) == "function" then
+		warn("[PureLib] Mounting ScreenGui to gethui()")
+
 		local hiddenUi = gethui()
 		assert(hiddenUi, "PureLib: gethui() returned nil")
 
 		screenGui.Parent = hiddenUi
 		assert(screenGui.Parent == hiddenUi, "PureLib could not mount to gethui()")
 
+		warn(("[PureLib] ScreenGui mounted to %s"):format(hiddenUi:GetFullName()))
 		return hiddenUi
 	end
+
+	warn("[PureLib] gethui() unavailable; falling back to PlayerGui")
 
 	local player = Players.LocalPlayer
 	assert(player, "PureLib must be executed on the client")
@@ -46,6 +51,7 @@ end
 
 function Window.new(options)
 	options = options or {}
+	warn("[PureLib] Window constructor started")
 
 	local self = setmetatable({}, Window)
 	self._connections = {}
@@ -174,6 +180,7 @@ function Window.new(options)
 	self.Content = content
 	self.Parent = uiParent
 
+	warn("[PureLib] Window constructor finished")
 	return self
 end
 
