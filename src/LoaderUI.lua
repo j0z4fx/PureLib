@@ -24,10 +24,8 @@ end
 
 -- C3 Bézier joined to straight edges; C3 continuity implies G3 continuity.
 local G3_INSETS = {
-	0.7188, 0.5957, 0.5139, 0.448, 0.3914, 0.3413,
-	0.2962, 0.2553, 0.218, 0.1841, 0.1532, 0.1252,
-	0.1002, 0.0781, 0.0588, 0.0425, 0.029, 0.0185,
-	0.0106, 0.0053, 0.0022, 0.0006, 0.0001, 0,
+	0.6667, 0.5, 0.3333, 0.25, 0.1667, 0.1667,
+	0.0833, 0.0833, 0, 0, 0, 0,
 }
 
 local function g3Surface(parent, color, radius)
@@ -44,8 +42,10 @@ local function g3Surface(parent, color, radius)
 	middle.BorderSizePixel = 0
 	middle.Parent = surface
 
-	local rowHeight = radius / #G3_INSETS
-	for index, ratio in ipairs(G3_INSETS) do
+	local rowCount = math.max(1, math.floor(radius + 0.5))
+	local rowHeight = radius / rowCount
+	for index = 1, rowCount do
+		local ratio = G3_INSETS[math.min(#G3_INSETS, math.ceil(index * #G3_INSETS / rowCount))]
 		local inset = radius * ratio
 		local y = (index - 1) * rowHeight
 
@@ -54,7 +54,7 @@ local function g3Surface(parent, color, radius)
 			row.Position = top
 				and UDim2.new(0, inset, 0, y)
 				or UDim2.new(0, inset, 1, -y - rowHeight)
-			row.Size = UDim2.new(1, -inset * 2, 0, rowHeight + 0.05)
+			row.Size = UDim2.new(1, -inset * 2, 0, rowHeight)
 			row.BackgroundColor3 = color
 			row.BorderSizePixel = 0
 			row.Parent = surface
