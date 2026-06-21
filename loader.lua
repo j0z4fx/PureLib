@@ -308,11 +308,20 @@ function Window.new(options)
 	contentPadding.Parent = content
 
 	local containerColors = {
-		Color3.fromRGB(34, 197, 94),
-		Color3.fromRGB(59, 130, 246),
-		Color3.fromRGB(234, 179, 8),
+		Color3.fromRGB(23, 23, 23),
+		Color3.fromRGB(23, 23, 23),
+		Color3.fromRGB(23, 23, 23),
 	}
 	local containers = {}
+	local pageColumns = {}
+	local columnCounts = options.Columns or { 3, 2, 1 }
+	local columnColors = {
+		Color3.fromRGB(239, 68, 68),
+		Color3.fromRGB(34, 197, 94),
+		Color3.fromRGB(59, 130, 246),
+		Color3.fromRGB(168, 85, 247),
+		Color3.fromRGB(249, 115, 22),
+	}
 
 	for index, color in ipairs(containerColors) do
 		local container = Instance.new("Frame")
@@ -323,6 +332,27 @@ function Window.new(options)
 		container.Visible = index == 1
 		container.Parent = content
 		table.insert(containers, container)
+
+		local count = math.clamp(math.floor(columnCounts[index] or 3), 1, 3)
+		local columns = {}
+		local layout = Instance.new("UIListLayout")
+		layout.FillDirection = Enum.FillDirection.Horizontal
+		layout.SortOrder = Enum.SortOrder.LayoutOrder
+		layout.Padding = UDim.new(0, 8)
+		layout.Parent = container
+
+		for columnIndex = 1, count do
+			local column = Instance.new("Frame")
+			column.Name = "Column" .. columnIndex
+			column.LayoutOrder = columnIndex
+			column.Size = UDim2.new(1 / count, -8 * (count - 1) / count, 1, 0)
+			column.BackgroundColor3 = columnColors[(index + columnIndex - 2) % #columnColors + 1]
+			column.BorderSizePixel = 0
+			column.Parent = container
+			table.insert(columns, column)
+		end
+
+		pageColumns[index] = columns
 	end
 
 	local rail = Instance.new("Frame")
@@ -343,26 +373,31 @@ function Window.new(options)
 	local navigation = Instance.new("Frame")
 	navigation.Name = "Destinations"
 	navigation.Position = UDim2.fromOffset(0, 24)
-	navigation.Size = UDim2.new(1, 0, 0, 192)
+	navigation.Size = UDim2.new(1, 0, 0, 152)
 	navigation.BackgroundTransparency = 1
 	navigation.Parent = rail
 
 	local navigationLayout = Instance.new("UIListLayout")
 	navigationLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 	navigationLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	navigationLayout.Padding = UDim.new(0, 12)
+	navigationLayout.Padding = UDim.new(0, 4)
 	navigationLayout.Parent = navigation
 
 	local navigationButtons = {}
 	local indicators = {}
 	local navigationLabels = {}
+	local iconData = {
+		{ Offset = Vector2.new(575, 625) },
+		{ Offset = Vector2.new(750, 0) },
+		{ Offset = Vector2.new(825, 550) },
+	}
 
 	local function selectPage(selected)
 		for index, container in ipairs(containers) do
 			local active = index == selected
 			container.Visible = active
 			indicators[index].BackgroundTransparency = active and 0 or 1
-			navigationLabels[index].TextColor3 = active and Theme.Text or Theme.Muted
+			navigationLabels[index].ImageColor3 = active and Theme.Text or Theme.Muted
 		end
 	end
 
@@ -370,7 +405,7 @@ function Window.new(options)
 		local button = Instance.new("TextButton")
 		button.Name = "Destination" .. index
 		button.LayoutOrder = index
-		button.Size = UDim2.new(1, 0, 0, 56)
+		button.Size = UDim2.new(1, 0, 0, 48)
 		button.BackgroundTransparency = 1
 		button.Text = ""
 		button.ZIndex = 3
@@ -388,14 +423,16 @@ function Window.new(options)
 		indicator.Parent = button
 		corner(indicator, 16)
 
-		local label = Instance.new("TextLabel")
+		local label = Instance.new("ImageLabel")
 		label.Name = "Icon"
+		label.AnchorPoint = Vector2.new(0.5, 0.5)
 		label.BackgroundTransparency = 1
-		label.Size = UDim2.fromScale(1, 1)
-		label.Font = Enum.Font.GothamSemibold
-		label.Text = tostring(index)
-		label.TextColor3 = Theme.Muted
-		label.TextSize = 16
+		label.Position = UDim2.fromScale(0.5, 0.5)
+		label.Size = UDim2.fromOffset(24, 24)
+		label.Image = "rbxasset://textures/Wc7umPTIl.png"
+		label.ImageColor3 = Theme.Muted
+		label.ImageRectOffset = iconData[index].Offset
+		label.ImageRectSize = Vector2.new(24, 24)
 		label.ZIndex = 4
 		label.Parent = button
 
@@ -453,6 +490,7 @@ function Window.new(options)
 	self.Root = root
 	self.Content = content
 	self.Containers = containers
+	self.PageColumns = pageColumns
 	self.NavigationRail = rail
 	self.NavigationButtons = navigationButtons
 	self.SelectPage = function(_, index)
