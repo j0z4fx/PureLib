@@ -299,6 +299,39 @@ function Window.new(options)
 	content.ClipsDescendants = true
 	content.Parent = root
 
+	local contentPadding = Instance.new("UIPadding")
+	contentPadding.PaddingTop = UDim.new(0, 16)
+	contentPadding.PaddingBottom = UDim.new(0, 16)
+	contentPadding.PaddingLeft = UDim.new(0, 16)
+	contentPadding.PaddingRight = UDim.new(0, 16)
+	contentPadding.Parent = content
+
+	local contentLayout = Instance.new("UIListLayout")
+	contentLayout.FillDirection = Enum.FillDirection.Horizontal
+	contentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+	contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	contentLayout.Padding = UDim.new(0, 8)
+	contentLayout.Parent = content
+
+	local containerColors = {
+		Color3.fromRGB(239, 68, 68),
+		Color3.fromRGB(34, 197, 94),
+		Color3.fromRGB(59, 130, 246),
+		Color3.fromRGB(234, 179, 8),
+	}
+	local containers = {}
+
+	for index, color in ipairs(containerColors) do
+		local container = Instance.new("Frame")
+		container.Name = "Container" .. index
+		container.LayoutOrder = index
+		container.Size = UDim2.new(0.25, -6, 1, 0)
+		container.BackgroundColor3 = color
+		container.BorderSizePixel = 0
+		container.Parent = content
+		table.insert(containers, container)
+	end
+
 	local dragging = false
 	local dragStart
 	local startPosition
@@ -342,6 +375,7 @@ function Window.new(options)
 	self.ScreenGui = screenGui
 	self.Root = root
 	self.Content = content
+	self.Containers = containers
 	self.Parent = guiParent
 	self.Theme = Theme
 	return self
