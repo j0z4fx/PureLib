@@ -149,8 +149,8 @@ function Window.new(options)
 
 	local navigation = Instance.new("Frame")
 	navigation.Name = "Destinations"
-	navigation.Position = UDim2.fromOffset(0, 24)
-	navigation.Size = UDim2.new(1, 0, 0, 152)
+	navigation.Position = UDim2.fromOffset(0, 8)
+	navigation.Size = UDim2.new(1, 0, 0, 200)
 	navigation.BackgroundTransparency = 1
 	navigation.Parent = rail
 
@@ -162,11 +162,13 @@ function Window.new(options)
 
 	local navigationButtons = {}
 	local indicators = {}
+	local navigationIcons = {}
 	local navigationLabels = {}
+	local destinationNames = options.TabNames or { "Inbox", "Outbox", "Favorites" }
 	local iconData = {
-		{ Offset = Vector2.new(575, 625) },
-		{ Offset = Vector2.new(750, 0) },
-		{ Offset = Vector2.new(825, 550) },
+		{ Url = "rbxasset://textures/u3lntJIKD2kYIeT.png", Offset = Vector2.new(650, 350) },
+		{ Url = "rbxasset://textures/u3lntJIKD2kYIeT.png", Offset = Vector2.new(400, 950) },
+		{ Url = "rbxasset://textures/u3lntJIKD2kYIeT.png", Offset = Vector2.new(400, 575) },
 	}
 
 	local function selectPage(selected)
@@ -174,7 +176,8 @@ function Window.new(options)
 			local active = index == selected
 			container.Visible = active
 			indicators[index].BackgroundTransparency = active and 0 or 1
-			navigationLabels[index].ImageColor3 = active and Theme.Text or Theme.Muted
+			navigationIcons[index].ImageColor3 = active and Theme.Text or Theme.Muted
+			navigationLabels[index].TextColor3 = active and Theme.Text or Theme.Muted
 		end
 	end
 
@@ -182,7 +185,7 @@ function Window.new(options)
 		local button = Instance.new("TextButton")
 		button.Name = "Destination" .. index
 		button.LayoutOrder = index
-		button.Size = UDim2.new(1, 0, 0, 48)
+		button.Size = UDim2.new(1, 0, 0, 64)
 		button.BackgroundTransparency = 1
 		button.Text = ""
 		button.ZIndex = 3
@@ -191,7 +194,7 @@ function Window.new(options)
 		local indicator = Instance.new("Frame")
 		indicator.Name = "ActiveIndicator"
 		indicator.AnchorPoint = Vector2.new(0.5, 0.5)
-		indicator.Position = UDim2.fromScale(0.5, 0.5)
+		indicator.Position = UDim2.new(0.5, 0, 0, 20)
 		indicator.Size = UDim2.fromOffset(56, 32)
 		indicator.BackgroundColor3 = Theme.Surface3
 		indicator.BackgroundTransparency = 1
@@ -200,21 +203,34 @@ function Window.new(options)
 		indicator.Parent = button
 		corner(indicator, 16)
 
-		local label = Instance.new("ImageLabel")
-		label.Name = "Icon"
-		label.AnchorPoint = Vector2.new(0.5, 0.5)
+		local icon = Instance.new("ImageLabel")
+		icon.Name = "Icon"
+		icon.AnchorPoint = Vector2.new(0.5, 0.5)
+		icon.BackgroundTransparency = 1
+		icon.Position = UDim2.new(0.5, 0, 0, 20)
+		icon.Size = UDim2.fromOffset(24, 24)
+		icon.Image = iconData[index].Url
+		icon.ImageColor3 = Theme.Muted
+		icon.ImageRectOffset = iconData[index].Offset
+		icon.ImageRectSize = Vector2.new(24, 24)
+		icon.ZIndex = 4
+		icon.Parent = button
+
+		local label = Instance.new("TextLabel")
+		label.Name = "Label"
 		label.BackgroundTransparency = 1
-		label.Position = UDim2.fromScale(0.5, 0.5)
-		label.Size = UDim2.fromOffset(24, 24)
-		label.Image = "rbxasset://textures/Wc7umPTIl.png"
-		label.ImageColor3 = Theme.Muted
-		label.ImageRectOffset = iconData[index].Offset
-		label.ImageRectSize = Vector2.new(24, 24)
+		label.Position = UDim2.new(0, 4, 0, 40)
+		label.Size = UDim2.new(1, -8, 0, 16)
+		label.Font = Enum.Font.GothamMedium
+		label.Text = destinationNames[index] or ("Tab " .. index)
+		label.TextColor3 = Theme.Muted
+		label.TextSize = 12
 		label.ZIndex = 4
 		label.Parent = button
 
 		table.insert(navigationButtons, button)
 		table.insert(indicators, indicator)
+		table.insert(navigationIcons, icon)
 		table.insert(navigationLabels, label)
 		table.insert(self._connections, button.MouseButton1Click:Connect(function()
 			selectPage(index)
