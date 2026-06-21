@@ -268,12 +268,12 @@ function Window.new(options)
 	end
 
 	for index = 1, #containers do
-		local button = Instance.new("TextButton")
+		local button = Instance.new("Frame")
 		button.Name = "Destination" .. index
 		button.LayoutOrder = index
 		button.Size = UDim2.new(1, 0, 0, 64)
+		button.Active = true
 		button.BackgroundTransparency = 1
-		button.Text = ""
 		button.ZIndex = 3
 		button.Parent = navigation
 
@@ -318,8 +318,12 @@ function Window.new(options)
 		table.insert(indicators, indicator)
 		table.insert(navigationIcons, icon)
 		table.insert(navigationLabels, label)
-		table.insert(self._connections, button.MouseButton1Click:Connect(function()
-			selectPage(index)
+		table.insert(self._connections, button.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1
+				or input.UserInputType == Enum.UserInputType.Touch
+			then
+				selectPage(index)
+			end
 		end))
 	end
 
