@@ -80,8 +80,8 @@ function Window.new(options)
 	local contentPadding = Instance.new("UIPadding")
 	contentPadding.PaddingTop = UDim.new(0, 16)
 	contentPadding.PaddingBottom = UDim.new(0, 16)
-	contentPadding.PaddingLeft = UDim.new(0, 16)
-	contentPadding.PaddingRight = UDim.new(0, 16)
+	contentPadding.PaddingLeft = UDim.new(0, 8)
+	contentPadding.PaddingRight = UDim.new(0, 8)
 	contentPadding.Parent = content
 
 	local containerColors = {
@@ -91,6 +91,7 @@ function Window.new(options)
 	}
 	local containers = {}
 	local pageColumns = {}
+	local pageDividers = {}
 	local columnCounts = options.Columns or { 3, 2, 1 }
 	local columnColors = {
 		Color3.fromRGB(239, 68, 68),
@@ -112,25 +113,155 @@ function Window.new(options)
 
 		local count = math.clamp(math.floor(columnCounts[index] or 3), 1, 3)
 		local columns = {}
-		local layout = Instance.new("UIListLayout")
-		layout.FillDirection = Enum.FillDirection.Horizontal
-		layout.SortOrder = Enum.SortOrder.LayoutOrder
-		layout.Padding = UDim.new(0, 8)
-		layout.Parent = container
+		local dividers = {}
+		local weights = table.create(count, 1)
+		local gap = 8
 
 		for columnIndex = 1, count do
 			local column = Instance.new("Frame")
 			column.Name = "Column" .. columnIndex
-			column.LayoutOrder = columnIndex
-			column.Size = UDim2.new(1 / count, -8 * (count - 1) / count, 1, 0)
+			column.Size = UDim2.fromScale(0, 1)
 			column.BackgroundColor3 = columnColors[(index + columnIndex - 2) % #columnColors + 1]
 			column.BorderSizePixel = 0
 			column.Parent = container
 			table.insert(columns, column)
 		end
 
+		local function updateColumns()
+			local available = math.max(0, container.AbsoluteSize.X - gap * (count - 1))
+			local totalWeight = 0
+			for _, weight in ipairs(weights) do
+				totalWeight += weight
+			end
+
+			local x = 0
+			for columnIndex, column in ipairs(columns) do
+				local width = available * weights[columnIndex] / totalWeight
+				column.Position = UDim2.fromOffset(x, 0)
+				column.Size = UDim2.new(0, width, 1, 0)
+				x += width
+
+				if dividers[columnIndex] then
+					dividers[columnIndex].Position = UDim2.new(0, x + gap / 2, 0.5, 0)
+					x += gap
+				end
+			end
+		end
+
+		for dividerIndex = 1, count - 1 do
+			local divider = Instance.new("Frame")
+			divider.Name = "Divider" .. dividerIndex
+			divider.Active = true
+			divider.AnchorPoint = Vector2.new(0.5, 0.5)
+			divider.Size = UDim2.new(0, 16, 1, 0)
+			divider.BackgroundTransparency = 1
+			divider.ZIndex = 5
+			divider.Parent = container
+
+			local line = Instance.new("Frame")
+			line.AnchorPoint = Vector2.new(0.5, 0.5)
+			line.Position = UDim2.fromScale(0.5, 0.5)
+			line.Size = UDim2.new(0, 1, 1, 0)
+			line.BackgroundColor3 = Theme.Border2
+			line.BorderSizePixel = 0
+			line.Parent = divider
+
+			local handle = Instance.new("Frame")
+			handle.AnchorPoint = Vector2.new(0.5, 0.5)
+			handle.Position = UDim2.fromScale(0.5, 0.5)
+			handle.Size = UDim2.fromOffset(4, 32)
+			handle.BackgroundColor3 = Theme.BorderHot
+			handle.BorderSizePixel = 0
+			handle.ZIndex = 6
+			handle.Parent = divider
+			corner(handle, 2)
+
+			local draggingDivider = false
+			local startX = 0
+			local startLeft = 0
+			local startRight = 0
+
+			table.insert(self._connections, divider.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1
+					or input.UserInputType == Enum.UserInputType.Touch
+				then
+					draggingDivider = true
+					for weightIndex, column in ipairs(columns) do
+						weights[weightIndex] = column.AbsoluteSize.X
+					end
+					startX = input.Position.X
+					startLeft = columns[dividerIndex].AbsoluteSize.X
+					startRight = columns[dividerIndex + 1].AbsoluteSize.X
+				end
+			end))
+
+			table.insert(self._connections, UserInputService.InputChanged:Connect(function(input)
+				if draggingDivider
+					and (input.UserInputType == Enum.UserInputType.MouseMovement
+						or input.UserInputType == Enum.UserInputType.Touch)
+				then
+					local pairWidth = startLeft + startRight
+					local left = math.clamp(startLeft + input.Position.X - startX, 120, pairWidth - 120)
+					weights[dividerIndex] = left
+					weights[dividerIndex + 1] = pairWidth - left
+					updateColumns()
+				end
+			end))
+
+			table.insert(self._connections, UserInputService.InputEnded:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1
+					or input.UserInputType == Enum.UserInputType.Touch
+				then
+					draggingDivider = false
+				end
+			end))
+
+			dividers[dividerIndex] = divider
+		end
+
+		table.insert(self._connections, container:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateColumns))
+		task.defer(updateColumns)
 		pageColumns[index] = columns
+		pageDividers[index] = dividers
 	end
+
+	local groupBox = Instance.new("Frame")
+	groupBox.Name = "DemoGroupBox"
+	groupBox.Position = UDim2.fromOffset(16, 16)
+	groupBox.Size = UDim2.new(1, -32, 0, 144)
+	groupBox.BackgroundColor3 = Theme.Surface
+	groupBox.BorderSizePixel = 0
+	groupBox.Parent = pageColumns[1][1]
+	corner(groupBox, 12)
+
+	local groupStroke = Instance.new("UIStroke")
+	groupStroke.Color = Theme.Border2
+	groupStroke.Thickness = 1
+	groupStroke.Parent = groupBox
+
+	local groupTitle = Instance.new("TextLabel")
+	groupTitle.BackgroundTransparency = 1
+	groupTitle.Position = UDim2.fromOffset(16, 12)
+	groupTitle.Size = UDim2.new(1, -32, 0, 24)
+	groupTitle.Font = Enum.Font.GothamSemibold
+	groupTitle.Text = "Demo group"
+	groupTitle.TextColor3 = Theme.Text
+	groupTitle.TextSize = 16
+	groupTitle.TextXAlignment = Enum.TextXAlignment.Left
+	groupTitle.Parent = groupBox
+
+	local groupBody = Instance.new("TextLabel")
+	groupBody.BackgroundTransparency = 1
+	groupBody.Position = UDim2.fromOffset(16, 44)
+	groupBody.Size = UDim2.new(1, -32, 0, 40)
+	groupBody.Font = Enum.Font.Gotham
+	groupBody.Text = "Outlined card + label + supporting text"
+	groupBody.TextColor3 = Theme.Muted
+	groupBody.TextSize = 14
+	groupBody.TextWrapped = true
+	groupBody.TextXAlignment = Enum.TextXAlignment.Left
+	groupBody.TextYAlignment = Enum.TextYAlignment.Top
+	groupBody.Parent = groupBox
 
 	local rail = Instance.new("Frame")
 	rail.Name = "NavigationRail"
@@ -239,59 +370,13 @@ function Window.new(options)
 
 	selectPage(1)
 
-	local dragging = false
-	local dragStart = nil
-	local startPosition = nil
-	local dragInput = nil
-
-	local beganConnection = root.InputBegan:Connect(function(input)
-		local inputType = input.UserInputType
-
-		if inputType == Enum.UserInputType.MouseButton1 or inputType == Enum.UserInputType.Touch then
-			dragging = true
-			dragStart = input.Position
-			startPosition = root.Position
-		end
-	end)
-	table.insert(self._connections, beganConnection)
-
-	local endedConnection = UserInputService.InputEnded:Connect(function(input)
-		local inputType = input.UserInputType
-
-		if inputType == Enum.UserInputType.MouseButton1 or inputType == Enum.UserInputType.Touch then
-			dragging = false
-		end
-	end)
-	table.insert(self._connections, endedConnection)
-
-	local changedConnection = root.InputChanged:Connect(function(input)
-		local inputType = input.UserInputType
-
-		if inputType == Enum.UserInputType.MouseMovement or inputType == Enum.UserInputType.Touch then
-			dragInput = input
-		end
-	end)
-	table.insert(self._connections, changedConnection)
-
-	local moveConnection = UserInputService.InputChanged:Connect(function(input)
-		if dragging and input == dragInput then
-			local delta = input.Position - dragStart
-
-			root.Position = UDim2.new(
-				startPosition.X.Scale,
-				startPosition.X.Offset + delta.X,
-				startPosition.Y.Scale,
-				startPosition.Y.Offset + delta.Y
-			)
-		end
-	end)
-	table.insert(self._connections, moveConnection)
-
 	self.ScreenGui = screenGui
 	self.Root = root
 	self.Content = content
 	self.Containers = containers
 	self.PageColumns = pageColumns
+	self.PageDividers = pageDividers
+	self.DemoGroupBox = groupBox
 	self.NavigationRail = rail
 	self.NavigationButtons = navigationButtons
 	self.SelectPage = function(_, index)
