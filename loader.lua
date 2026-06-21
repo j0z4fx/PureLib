@@ -735,12 +735,12 @@ function Window.new(options)
 		local function segment(name, color)
 			local item = Instance.new("Frame")
 			item.Name = name
-			item.Position = UDim2.fromOffset(0, 16)
-			item.Size = UDim2.fromOffset(0, 16)
+			item.Position = UDim2.fromOffset(0, 20)
+			item.Size = UDim2.fromOffset(0, 8)
 			item.BackgroundColor3 = color
 			item.BorderSizePixel = 0
 			item.Parent = target
-			corner(item, 8)
+			corner(item, 4)
 			return item
 		end
 
@@ -751,31 +751,17 @@ function Window.new(options)
 		local function makeHandle(name)
 			local item = Instance.new("Frame")
 			item.Name = name
-			item.Size = UDim2.fromOffset(4, 44)
+			item.Size = UDim2.fromOffset(16, 16)
 			item.BackgroundColor3 = Theme.Accent
 			item.BorderSizePixel = 0
 			item.ZIndex = 2
 			item.Parent = target
-			corner(item, 2)
+			corner(item, 8)
 			return item
 		end
 
 		local firstHandle = makeHandle("Handle")
 		local secondHandle = variant == "Range" and makeHandle("EndHandle") or nil
-
-		for _, side in ipairs({ 0, 1 }) do
-			local stop = Instance.new("Frame")
-			stop.Name = "StopIndicator"
-			stop.AnchorPoint = Vector2.new(side, 0.5)
-			stop.Position = UDim2.new(side, side == 0 and 6 or -6, 0.5, 0)
-			stop.Size = UDim2.fromOffset(4, 4)
-			stop.BackgroundColor3 = Theme.BorderHot
-			stop.BorderSizePixel = 0
-			stop.ZIndex = 3
-			stop.Visible = variant ~= "Standard" or side == 1
-			stop.Parent = target
-			corner(stop, 2)
-		end
 
 		local function snap(value)
 			return math.clamp(minimum + math.floor(((value - minimum) / step) + 0.5) * step, minimum, maximum)
@@ -805,8 +791,15 @@ function Window.new(options)
 
 		local function setSegment(item, startX, endX)
 			item.Visible = endX > startX
-			item.Position = UDim2.fromOffset(startX, 16)
-			item.Size = UDim2.fromOffset(math.max(0, endX - startX), 16)
+			item.Position = UDim2.fromOffset(startX, 20)
+			item.Size = UDim2.fromOffset(math.max(0, endX - startX), 8)
+		end
+
+		local function placeHandle(item, x)
+			item.Position = UDim2.fromOffset(
+				x - item.Size.X.Offset / 2,
+				(48 - item.Size.Y.Offset) / 2
+			)
 		end
 
 		local function render()
@@ -818,29 +811,29 @@ function Window.new(options)
 
 			local x1 = fraction(variant == "Range" and lower or value) * width
 			local x2 = fraction(upper) * width
-			firstHandle.Position = UDim2.fromOffset(x1 - firstHandle.Size.X.Offset / 2, 2)
+			placeHandle(firstHandle, x1)
 
 			if variant == "Range" then
-				secondHandle.Position = UDim2.fromOffset(x2 - secondHandle.Size.X.Offset / 2, 2)
-				setSegment(left, 0, math.max(0, x1 - 8))
-				setSegment(active, math.min(width, x1 + 8), math.max(0, x2 - 8))
-				setSegment(right, math.min(width, x2 + 8), width)
+				placeHandle(secondHandle, x2)
+				setSegment(left, 0, math.max(0, x1 - 12))
+				setSegment(active, math.min(width, x1 + 12), math.max(0, x2 - 12))
+				setSegment(right, math.min(width, x2 + 12), width)
 			elseif variant == "Centered" then
 				local center = width / 2
 				if x1 < center then
-					setSegment(left, 0, math.max(0, x1 - 8))
-					setSegment(active, math.min(width, x1 + 8), center)
+					setSegment(left, 0, math.max(0, x1 - 12))
+					setSegment(active, math.min(width, x1 + 12), center)
 					setSegment(right, center, width)
 				else
 					setSegment(left, 0, center)
-					setSegment(active, center, math.max(0, x1 - 8))
-					setSegment(right, math.min(width, x1 + 8), width)
+					setSegment(active, center, math.max(0, x1 - 12))
+					setSegment(right, math.min(width, x1 + 12), width)
 				end
 			else
-				setSegment(left, 0, math.max(0, x1 - 8))
+				setSegment(left, 0, math.max(0, x1 - 12))
 				left.BackgroundColor3 = Theme.Accent
 				active.Visible = false
-				setSegment(right, math.min(width, x1 + 8), width)
+				setSegment(right, math.min(width, x1 + 12), width)
 			end
 		end
 
@@ -866,7 +859,8 @@ function Window.new(options)
 		end
 
 		local function pressHandle(item, pressed)
-			item.Size = UDim2.fromOffset(pressed and 2 or 4, 44)
+			item.Size = UDim2.fromOffset(pressed and 18 or 16, pressed and 18 or 16)
+			item.BackgroundColor3 = pressed and Theme.AccentHover or Theme.Accent
 			render()
 		end
 
