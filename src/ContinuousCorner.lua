@@ -1,6 +1,6 @@
 local AssetService = game:GetService("AssetService")
 
-local IMAGE_SIZE = 512
+local IMAGE_SIZE = 64
 local image
 local content
 
@@ -17,7 +17,7 @@ local function getContent()
 
 		local pixelBuffer = buffer.create(IMAGE_SIZE * IMAGE_SIZE * 4)
 		local byteOffset = 0
-		local aaRange = 0.015
+		local aaRange = 0.08
 
 		for y = 1, IMAGE_SIZE do
 			for x = 1, IMAGE_SIZE do
@@ -58,15 +58,44 @@ return function(parent, color, radius, position, size)
 	local imageContent = getContent()
 
 	if imageContent then
-		local surface = Instance.new("ImageLabel")
+		local surface = Instance.new("Frame")
 		surface.BackgroundTransparency = 1
 		surface.BorderSizePixel = 0
-		surface.ImageContent = imageContent
-		surface.ImageColor3 = color
 		surface.Position = position or UDim2.fromOffset(0, 0)
-		surface.ScaleType = Enum.ScaleType.Stretch
 		surface.Size = size or UDim2.fromScale(1, 1)
 		surface.Parent = parent
+
+		local horizontal = Instance.new("Frame")
+		horizontal.Position = UDim2.fromOffset(radius, 0)
+		horizontal.Size = UDim2.new(1, -radius * 2, 1, 0)
+		horizontal.BackgroundColor3 = color
+		horizontal.BorderSizePixel = 0
+		horizontal.Parent = surface
+
+		local vertical = Instance.new("Frame")
+		vertical.Position = UDim2.fromOffset(0, radius)
+		vertical.Size = UDim2.new(1, 0, 1, -radius * 2)
+		vertical.BackgroundColor3 = color
+		vertical.BorderSizePixel = 0
+		vertical.Parent = surface
+
+		for _, cornerPosition in ipairs({
+			UDim2.fromOffset(0, 0),
+			UDim2.new(1, -radius * 2, 0, 0),
+			UDim2.new(0, 0, 1, -radius * 2),
+			UDim2.new(1, -radius * 2, 1, -radius * 2),
+		}) do
+			local patch = Instance.new("ImageLabel")
+			patch.BackgroundTransparency = 1
+			patch.BorderSizePixel = 0
+			patch.ImageContent = imageContent
+			patch.ImageColor3 = color
+			patch.Position = cornerPosition
+			patch.ScaleType = Enum.ScaleType.Stretch
+			patch.Size = UDim2.fromOffset(radius * 2, radius * 2)
+			patch.Parent = surface
+		end
+
 		return surface
 	end
 
