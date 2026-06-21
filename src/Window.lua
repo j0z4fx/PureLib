@@ -70,8 +70,8 @@ function Window.new(options)
 
 	local content = Instance.new("Frame")
 	content.Name = "Content"
-	content.Position = UDim2.new(0, 0, 0, 0)
-	content.Size = UDim2.new(1, 0, 1, 0)
+	content.Position = UDim2.fromOffset(48, 0)
+	content.Size = UDim2.new(1, -48, 1, 0)
 	content.BackgroundTransparency = 1
 	content.BorderSizePixel = 0
 	content.ClipsDescendants = true
@@ -103,10 +103,12 @@ function Window.new(options)
 		local container = Instance.new("Frame")
 		container.Name = "Container" .. index
 		container.LayoutOrder = index
-		container.Size = UDim2.new(0.25, -6, 1, 0)
+		container.Size = index == 1
+			and UDim2.new(0, 48, 1, 0)
+			or UDim2.new(1 / 3, -16 / 3, 1, 0)
 		container.BackgroundColor3 = color
 		container.BorderSizePixel = 0
-		container.Parent = content
+		container.Parent = index == 1 and root or content
 		table.insert(containers, container)
 	end
 
