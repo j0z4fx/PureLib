@@ -332,6 +332,19 @@ function Window.new(options)
 		container.BackgroundColor3 = color
 		container.BorderSizePixel = 0
 		container.Parent = index == 1 and root or content
+
+		if index == 1 then
+			container.BackgroundTransparency = 1
+			g3Surface(container, color, 18)
+
+			local squareRightEdge = Instance.new("Frame")
+			squareRightEdge.Position = UDim2.fromOffset(18, 0)
+			squareRightEdge.Size = UDim2.new(1, -18, 1, 0)
+			squareRightEdge.BackgroundColor3 = color
+			squareRightEdge.BorderSizePixel = 0
+			squareRightEdge.Parent = container
+		end
+
 		table.insert(containers, container)
 	end
 
