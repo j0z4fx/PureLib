@@ -355,13 +355,14 @@ function Window.new(options)
 
 	local navigationButtons = {}
 	local indicators = {}
+	local navigationLabels = {}
 
 	local function selectPage(selected)
 		for index, container in ipairs(containers) do
 			local active = index == selected
 			container.Visible = active
 			indicators[index].BackgroundTransparency = active and 0 or 1
-			navigationButtons[index].TextColor3 = active and Theme.Text or Theme.Muted
+			navigationLabels[index].TextColor3 = active and Theme.Text or Theme.Muted
 		end
 	end
 
@@ -371,10 +372,7 @@ function Window.new(options)
 		button.LayoutOrder = index
 		button.Size = UDim2.new(1, 0, 0, 56)
 		button.BackgroundTransparency = 1
-		button.Font = Enum.Font.GothamSemibold
-		button.Text = tostring(index)
-		button.TextColor3 = Theme.Muted
-		button.TextSize = 16
+		button.Text = ""
 		button.ZIndex = 3
 		button.Parent = navigation
 
@@ -390,8 +388,20 @@ function Window.new(options)
 		indicator.Parent = button
 		corner(indicator, 16)
 
+		local label = Instance.new("TextLabel")
+		label.Name = "Icon"
+		label.BackgroundTransparency = 1
+		label.Size = UDim2.fromScale(1, 1)
+		label.Font = Enum.Font.GothamSemibold
+		label.Text = tostring(index)
+		label.TextColor3 = Theme.Muted
+		label.TextSize = 16
+		label.ZIndex = 4
+		label.Parent = button
+
 		table.insert(navigationButtons, button)
 		table.insert(indicators, indicator)
+		table.insert(navigationLabels, label)
 		table.insert(self._connections, button.MouseButton1Click:Connect(function()
 			selectPage(index)
 		end))
