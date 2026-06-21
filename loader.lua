@@ -1,4 +1,3 @@
-local AssetService = game:GetService("AssetService")
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -82,98 +81,47 @@ local function corner(parent, radius)
 	item.Parent = parent
 end
 
-local G3_SIZE = 64
-local g3Image
-local g3Content
+local G3_URL = "https://raw.githubusercontent.com/j0z4fx/PureLib/f7898c40a0b834b29595dbd0508105e99afb9517/assets/continuous-corners-p45.png"
+local g3Asset
 
-local function getG3Content()
-	if g3Content ~= nil then
-		return g3Content or nil
+local function getG3Asset()
+	if g3Asset ~= nil then
+		return g3Asset or nil
 	end
 
-	local loaded, content = pcall(function()
-		local image = AssetService:CreateEditableImage({
-			Size = Vector2.new(G3_SIZE, G3_SIZE),
-		})
-		assert(image, "Could not load EditableImage canvas.")
+	local loadAsset = type(getcustomasset) == "function" and getcustomasset
+		or type(getsynasset) == "function" and getsynasset
 
-		local pixels = buffer.create(G3_SIZE * G3_SIZE * 4)
-		local byteOffset = 0
-		local aaRange = 0.08
+	if type(writefile) ~= "function" or not loadAsset then
+		g3Asset = false
+		return nil
+	end
 
-		for y = 1, G3_SIZE do
-			for x = 1, G3_SIZE do
-				local nx = (x - G3_SIZE / 2) / (G3_SIZE / 2)
-				local ny = (y - G3_SIZE / 2) / (G3_SIZE / 2)
-				local value = math.abs(nx) ^ 4.5 + math.abs(ny) ^ 4.5
-				local alpha = 0
-
-				if value <= 1 - aaRange then
-					alpha = 255
-				elseif value < 1 + aaRange then
-					local t = (value - (1 - aaRange)) / (aaRange * 2)
-					alpha = math.floor((1 - t) * 255)
-				end
-
-				buffer.writeu8(pixels, byteOffset, 255)
-				buffer.writeu8(pixels, byteOffset + 1, 255)
-				buffer.writeu8(pixels, byteOffset + 2, 255)
-				buffer.writeu8(pixels, byteOffset + 3, alpha)
-				byteOffset += 4
-			end
-		end
-
-		image:WritePixelsBuffer(Vector2.zero, Vector2.new(G3_SIZE, G3_SIZE), pixels)
-		g3Image = image
-		return Content.fromObject(image)
+	local loaded, asset = pcall(function()
+		local path = "PureLib-continuous-corners-p45.png"
+		writefile(path, game:HttpGet(G3_URL))
+		return loadAsset(path)
 	end)
 
-	g3Content = loaded and content or false
-	return g3Content or nil
+	g3Asset = loaded and asset or false
+	return g3Asset or nil
 end
 
 local function g3Surface(parent, color, radius, position, size)
-	local content = getG3Content()
+	local asset = getG3Asset()
 
-	if content then
-		local surface = Instance.new("Frame")
+	if asset then
+		local surface = Instance.new("ImageLabel")
 		surface.BackgroundTransparency = 1
 		surface.BorderSizePixel = 0
+		surface.Image = asset
+		surface.ImageColor3 = color
 		surface.Position = position or UDim2.fromOffset(0, 0)
+		surface.ScaleType = Enum.ScaleType.Slice
+		surface.SliceCenter = Rect.new(48, 48, 80, 80)
+		surface.SliceScale = radius / 48
 		surface.Size = size or UDim2.fromScale(1, 1)
 		surface.Parent = parent
-
-		local horizontal = Instance.new("Frame")
-		horizontal.Position = UDim2.fromOffset(radius, 0)
-		horizontal.Size = UDim2.new(1, -radius * 2, 1, 0)
-		horizontal.BackgroundColor3 = color
-		horizontal.BorderSizePixel = 0
-		horizontal.Parent = surface
-
-		local vertical = Instance.new("Frame")
-		vertical.Position = UDim2.fromOffset(0, radius)
-		vertical.Size = UDim2.new(1, 0, 1, -radius * 2)
-		vertical.BackgroundColor3 = color
-		vertical.BorderSizePixel = 0
-		vertical.Parent = surface
-
-		for _, cornerPosition in ipairs({
-			UDim2.fromOffset(0, 0),
-			UDim2.new(1, -radius * 2, 0, 0),
-			UDim2.new(0, 0, 1, -radius * 2),
-			UDim2.new(1, -radius * 2, 1, -radius * 2),
-		}) do
-			local patch = Instance.new("ImageLabel")
-			patch.BackgroundTransparency = 1
-			patch.BorderSizePixel = 0
-			patch.ImageContent = content
-			patch.ImageColor3 = color
-			patch.Position = cornerPosition
-			patch.ScaleType = Enum.ScaleType.Stretch
-			patch.Size = UDim2.fromOffset(radius * 2, radius * 2)
-			patch.Parent = surface
-		end
-
 		return surface
 	end
 
