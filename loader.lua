@@ -347,7 +347,7 @@ return function(parent, color, radius, position, size)
 	return frame
 end
 end
-__modules["v2/Controls"] = function(require)
+__modules["v2/ControlFactory"] = function(require)
 local UserInputService = game:GetService("UserInputService")
 
 local Util = require("v2/Util")
@@ -1078,6 +1078,110 @@ function Controls.create(ctx, parent, kind, options)
 end
 
 return Controls
+end
+__modules["v2/controls/Button"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "button", options) end
+end
+__modules["v2/controls/IconButton"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "icon-button", options) end
+end
+__modules["v2/controls/Checkbox"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "checkbox", options) end
+end
+__modules["v2/controls/Radio"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "radio", options) end
+end
+__modules["v2/controls/Switch"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "switch", options) end
+end
+__modules["v2/controls/Slider"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "slider", options) end
+end
+__modules["v2/controls/CenteredSlider"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "centered-slider", options) end
+end
+__modules["v2/controls/RangeSlider"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "range-slider", options) end
+end
+__modules["v2/controls/TextField"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "text-field", options) end
+end
+__modules["v2/controls/Dropdown"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "dropdown", options) end
+end
+__modules["v2/controls/Keybind"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "keybind", options) end
+end
+__modules["v2/controls/ColorInput"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "color", options) end
+end
+__modules["v2/controls/Chip"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "chip", options) end
+end
+__modules["v2/controls/Progress"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "progress", options) end
+end
+__modules["v2/controls/ListRow"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "list", options) end
+end
+__modules["v2/controls/Title"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "title", options) end
+end
+__modules["v2/controls/Divider"] = function(require)
+local Factory = require("v2/ControlFactory")
+return function(ctx, parent, options) return Factory.create(ctx, parent, "divider", options) end
+end
+__modules["v2/Controls"] = function(require)
+local Controls = {
+	button = require("v2/controls/Button"),
+	["icon-button"] = require("v2/controls/IconButton"),
+	iconbutton = require("v2/controls/IconButton"),
+	checkbox = require("v2/controls/Checkbox"),
+	radio = require("v2/controls/Radio"),
+	switch = require("v2/controls/Switch"),
+	toggle = require("v2/controls/Switch"),
+	slider = require("v2/controls/Slider"),
+	["centered-slider"] = require("v2/controls/CenteredSlider"),
+	centeredslider = require("v2/controls/CenteredSlider"),
+	["range-slider"] = require("v2/controls/RangeSlider"),
+	rangeslider = require("v2/controls/RangeSlider"),
+	["text-field"] = require("v2/controls/TextField"),
+	textfield = require("v2/controls/TextField"),
+	dropdown = require("v2/controls/Dropdown"),
+	select = require("v2/controls/Dropdown"),
+	keybind = require("v2/controls/Keybind"),
+	color = require("v2/controls/ColorInput"),
+	colorinput = require("v2/controls/ColorInput"),
+	chip = require("v2/controls/Chip"),
+	progress = require("v2/controls/Progress"),
+	list = require("v2/controls/ListRow"),
+	listrow = require("v2/controls/ListRow"),
+	title = require("v2/controls/Title"),
+	divider = require("v2/controls/Divider"),
+}
+
+return {
+	create = function(ctx, parent, kind, options)
+		local name = tostring(kind):lower()
+		return assert(Controls[name], "Unknown PureLib control type: " .. name)(ctx, parent, options or {})
+	end,
+}
 end
 __modules["v2/Window"] = function(require)
 local Players = game:GetService("Players")
