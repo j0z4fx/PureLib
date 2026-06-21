@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local g3Surface = require(script.Parent.ContinuousCorner)
 
@@ -262,8 +263,8 @@ function Window.new(options)
 			local active = index == selected
 			container.Visible = active
 			indicators[index].BackgroundTransparency = active and 0 or 1
-			navigationIcons[index].ImageColor3 = active and Theme.Text or Theme.Muted
-			navigationLabels[index].TextColor3 = active and Theme.Text or Theme.Muted
+			navigationIcons[index].ImageColor3 = active and Theme.Panel or Theme.Muted
+			navigationLabels[index].TextColor3 = active and Theme.Panel or Theme.Muted
 		end
 	end
 
@@ -282,7 +283,7 @@ function Window.new(options)
 		indicator.AnchorPoint = Vector2.new(0.5, 0.5)
 		indicator.Position = UDim2.new(0.5, 0, 0, 20)
 		indicator.Size = UDim2.fromOffset(56, 32)
-		indicator.BackgroundColor3 = Theme.Surface3
+		indicator.BackgroundColor3 = Theme.Accent
 		indicator.BackgroundTransparency = 1
 		indicator.BorderSizePixel = 0
 		indicator.ZIndex = 2
@@ -355,7 +356,7 @@ function Window.new(options)
 	self.AddTitle = function(window, tabIndex, columnIndex, text)
 		local column = assert(window.PageColumns[tabIndex] and window.PageColumns[tabIndex][columnIndex], "Invalid tab or column")
 		window._columnElementY[tabIndex] = window._columnElementY[tabIndex] or {}
-		local y = window._columnElementY[tabIndex][columnIndex] or 16
+		local y = window._columnElementY[tabIndex][columnIndex] or 0
 
 		local title = Instance.new("Frame")
 		title.Name = "Title"
@@ -389,6 +390,92 @@ function Window.new(options)
 		window._columnElementY[tabIndex][columnIndex] = y + 36
 		return title
 	end
+	self.AddToggle = function(window, tabIndex, columnIndex, text, default, callback)
+		local column = assert(window.PageColumns[tabIndex] and window.PageColumns[tabIndex][columnIndex], "Invalid tab or column")
+		window._columnElementY[tabIndex] = window._columnElementY[tabIndex] or {}
+		local y = window._columnElementY[tabIndex][columnIndex] or 16
+
+		local row = Instance.new("Frame")
+		row.Name = "Toggle"
+		row.Position = UDim2.fromOffset(0, y)
+		row.Size = UDim2.new(1, 0, 0, 48)
+		row.BackgroundTransparency = 1
+		row.Parent = column
+
+		local label = Instance.new("TextLabel")
+		label.BackgroundTransparency = 1
+		label.Size = UDim2.new(1, -68, 1, 0)
+		label.Font = Enum.Font.Gotham
+		label.Text = tostring(text)
+		label.TextColor3 = Theme.Text
+		label.TextSize = 16
+		label.TextXAlignment = Enum.TextXAlignment.Left
+		label.Parent = row
+
+		local target = Instance.new("Frame")
+		target.AnchorPoint = Vector2.new(1, 0.5)
+		target.Position = UDim2.fromScale(1, 0.5)
+		target.Size = UDim2.fromOffset(52, 48)
+		target.Active = true
+		target.BackgroundTransparency = 1
+		target.Parent = row
+
+		local track = Instance.new("Frame")
+		track.AnchorPoint = Vector2.new(0.5, 0.5)
+		track.Position = UDim2.fromScale(0.5, 0.5)
+		track.Size = UDim2.fromOffset(52, 32)
+		track.BorderSizePixel = 0
+		track.Parent = target
+		corner(track, 16)
+
+		local outline = Instance.new("UIStroke")
+		outline.Thickness = 2
+		outline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		outline.Parent = track
+
+		local handle = Instance.new("Frame")
+		handle.BorderSizePixel = 0
+		handle.Parent = track
+		corner(handle, 14)
+
+		local value = default == true
+		local function render(animated)
+			local duration = animated and 0.2 or 0
+			TweenService:Create(track, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				BackgroundColor3 = value and Theme.Accent or Theme.Surface3,
+			}):Play()
+			TweenService:Create(outline, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				Color = value and Theme.Accent or Theme.BorderHot,
+			}):Play()
+			TweenService:Create(handle, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+				Position = value and UDim2.fromOffset(24, 4) or UDim2.fromOffset(8, 8),
+				Size = value and UDim2.fromOffset(24, 24) or UDim2.fromOffset(16, 16),
+				BackgroundColor3 = value and Theme.Panel or Theme.BorderHot,
+			}):Play()
+		end
+
+		local toggle = { Frame = row, Track = track, Handle = handle, Value = value }
+		function toggle:SetValue(nextValue, silent)
+			value = nextValue == true
+			self.Value = value
+			render(true)
+			if not silent and callback then
+				callback(value)
+			end
+		end
+
+		table.insert(window._connections, target.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1
+				or input.UserInputType == Enum.UserInputType.Touch
+			then
+				toggle:SetValue(not value)
+			end
+		end))
+
+		render(false)
+		window._columnElementY[tabIndex][columnIndex] = y + 56
+		return toggle
+	end
 	self.NavigationRail = rail
 	self.NavigationButtons = navigationButtons
 	self.SelectPage = function(_, index)
@@ -396,6 +483,7 @@ function Window.new(options)
 	end
 	self:AddTitle(1, 1, "Demo title")
 	self:AddDivider(1, 1)
+	self.DemoToggle = self:AddToggle(1, 1, "Demo toggle", false)
 	self.Parent = guiParent
 	self.Theme = Theme
 
