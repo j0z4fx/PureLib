@@ -316,13 +316,6 @@ function Window.new(options)
 	local pageColumns = {}
 	local pageDividers = {}
 	local columnCounts = options.Columns or { 3, 2, 1 }
-	local columnColors = {
-		Color3.fromRGB(239, 68, 68),
-		Color3.fromRGB(34, 197, 94),
-		Color3.fromRGB(59, 130, 246),
-		Color3.fromRGB(168, 85, 247),
-		Color3.fromRGB(249, 115, 22),
-	}
 
 	for index, color in ipairs(containerColors) do
 		local container = Instance.new("Frame")
@@ -344,7 +337,7 @@ function Window.new(options)
 			local column = Instance.new("Frame")
 			column.Name = "Column" .. columnIndex
 			column.Size = UDim2.fromScale(0, 1)
-			column.BackgroundColor3 = columnColors[(index + columnIndex - 2) % #columnColors + 1]
+			column.BackgroundTransparency = 1
 			column.BorderSizePixel = 0
 			column.Parent = container
 			table.insert(columns, column)
@@ -450,8 +443,8 @@ function Window.new(options)
 
 	local groupBox = Instance.new("Frame")
 	groupBox.Name = "DemoGroupBox"
-	groupBox.Position = UDim2.fromOffset(16, 16)
-	groupBox.Size = UDim2.new(1, -32, 0, 144)
+	groupBox.Position = UDim2.fromOffset(0, 16)
+	groupBox.Size = UDim2.new(1, 0, 0, 144)
 	groupBox.BackgroundColor3 = Theme.Surface
 	groupBox.BorderSizePixel = 0
 	groupBox.Parent = pageColumns[1][1]
