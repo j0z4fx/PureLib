@@ -96,12 +96,13 @@ function Window.new(options)
 	local columnCounts = options.Columns or { 3, 2, 1 }
 
 	for index, color in ipairs(containerColors) do
-		local container = Instance.new("Frame")
+		local container = Instance.new("CanvasGroup")
 		container.Name = "Container" .. index
 		container.Size = UDim2.fromScale(1, 1)
 		container.BackgroundColor3 = color
 		container.BorderSizePixel = 0
 		container.Visible = index == 1
+		container.GroupTransparency = index == 1 and 0 or 1
 		container.Parent = content
 		table.insert(containers, container)
 
@@ -121,7 +122,8 @@ function Window.new(options)
 			table.insert(columns, column)
 		end
 
-		local function updateColumns()
+		local columnTweens = {}
+		local function updateColumns(animated)
 			local available = math.max(0, container.AbsoluteSize.X - gap * (count - 1))
 			local totalWeight = 0
 			for _, weight in ipairs(weights) do
@@ -130,13 +132,34 @@ function Window.new(options)
 
 			local x = 0
 			for columnIndex, column in ipairs(columns) do
-				local width = available * weights[columnIndex] / totalWeight
-				column.Position = UDim2.fromOffset(x, 0)
-				column.Size = UDim2.new(0, width, 1, 0)
+				local width = math.round(available * weights[columnIndex] / totalWeight)
+				x = math.round(x)
+				local goals = {
+					Position = UDim2.fromOffset(x, 0),
+					Size = UDim2.new(0, width, 1, 0),
+				}
+				if columnTweens[column] then columnTweens[column]:Cancel() end
+				if animated then
+					columnTweens[column] = TweenService:Create(column, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), goals)
+					columnTweens[column]:Play()
+				else
+					column.Position = goals.Position
+					column.Size = goals.Size
+				end
 				x += width
 
 				if dividers[columnIndex] then
-					dividers[columnIndex].Position = UDim2.new(0, x + gap / 2, 0.5, 0)
+					local divider = dividers[columnIndex]
+					local dividerPosition = UDim2.new(0, math.round(x + gap / 2), 0.5, 0)
+					if columnTweens[divider] then columnTweens[divider]:Cancel() end
+					if animated then
+						columnTweens[divider] = TweenService:Create(divider, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+							Position = dividerPosition,
+						})
+						columnTweens[divider]:Play()
+					else
+						divider.Position = dividerPosition
+					end
 					x += gap
 				end
 			end
@@ -198,7 +221,7 @@ function Window.new(options)
 					local left = math.clamp(startLeft + input.Position.X - startX, 120, pairWidth - 120)
 					weights[dividerIndex] = left
 					weights[dividerIndex + 1] = pairWidth - left
-					updateColumns()
+					updateColumns(true)
 				end
 			end))
 
@@ -259,12 +282,23 @@ function Window.new(options)
 	}
 
 	local function selectPage(selected)
+		local transition = TweenInfo.new(0.16, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 		for index, container in ipairs(containers) do
 			local active = index == selected
-			container.Visible = active
-			indicators[index].BackgroundTransparency = active and 0 or 1
-			navigationIcons[index].ImageColor3 = active and Theme.Panel or Theme.Muted
-			navigationLabels[index].TextColor3 = active and Theme.Text or Theme.Muted
+			if active then
+				container.Visible = true
+				container.GroupTransparency = 1
+				TweenService:Create(container, transition, { GroupTransparency = 0 }):Play()
+			else
+				local fade = TweenService:Create(container, transition, { GroupTransparency = 1 })
+				fade:Play()
+				task.delay(0.16, function()
+					if container.GroupTransparency >= 0.99 then container.Visible = false end
+				end)
+			end
+			TweenService:Create(indicators[index], transition, { BackgroundTransparency = active and 0 or 1 }):Play()
+			TweenService:Create(navigationIcons[index], transition, { ImageColor3 = active and Theme.Panel or Theme.Muted }):Play()
+			TweenService:Create(navigationLabels[index], transition, { TextColor3 = active and Theme.Text or Theme.Muted }):Play()
 		end
 	end
 
@@ -434,24 +468,31 @@ function Window.new(options)
 		outline.Parent = track
 
 		local handle = Instance.new("Frame")
+		handle.AnchorPoint = Vector2.new(0.5, 0.5)
 		handle.BorderSizePixel = 0
 		handle.Parent = track
 		corner(handle, 8)
 
 		local value = default == true
+		local toggleTweens = {}
+		local function animate(item, goals, duration)
+			if toggleTweens[item] then toggleTweens[item]:Cancel() end
+			toggleTweens[item] = TweenService:Create(item, TweenInfo.new(duration, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), goals)
+			toggleTweens[item]:Play()
+		end
 		local function render(animated)
 			local duration = animated and 0.2 or 0
-			TweenService:Create(track, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			animate(track, {
 				BackgroundColor3 = value and Theme.Accent or Theme.Surface3,
-			}):Play()
-			TweenService:Create(outline, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+			}, duration)
+			animate(outline, {
 				Color = value and Theme.Accent or Theme.BorderHot,
-			}):Play()
-			TweenService:Create(handle, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-				Position = value and UDim2.fromOffset(14, 2) or UDim2.fromOffset(5, 5),
+			}, duration)
+			animate(handle, {
+				Position = value and UDim2.fromOffset(22, 10) or UDim2.fromOffset(10, 10),
 				Size = value and UDim2.fromOffset(16, 16) or UDim2.fromOffset(10, 10),
 				BackgroundColor3 = value and Theme.Panel or Theme.BorderHot,
-			}):Play()
+			}, duration)
 		end
 
 		local toggle = { Frame = row, Track = track, Handle = handle, Value = value }
@@ -529,6 +570,7 @@ function Window.new(options)
 		local function makeHandle(name)
 			local item = Instance.new("Frame")
 			item.Name = name
+			item.AnchorPoint = Vector2.new(0.5, 0.5)
 			item.Size = UDim2.fromOffset(16, 16)
 			item.BackgroundColor3 = Theme.Accent
 			item.BorderSizePixel = 0
@@ -567,20 +609,38 @@ function Window.new(options)
 			return (number - minimum) / (maximum - minimum)
 		end
 
-		local function setSegment(item, startX, endX)
-			item.Visible = endX > startX
-			item.Position = UDim2.fromOffset(startX, 20)
-			item.Size = UDim2.fromOffset(math.max(0, endX - startX), 8)
+		local sliderTweens = {}
+		local function animate(item, goals, duration)
+			if sliderTweens[item] then sliderTweens[item]:Cancel() end
+			if duration > 0 then
+				sliderTweens[item] = TweenService:Create(item, TweenInfo.new(duration, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), goals)
+				sliderTweens[item]:Play()
+			else
+				for property, result in pairs(goals) do item[property] = result end
+			end
 		end
 
-		local function placeHandle(item, x)
-			item.Position = UDim2.fromOffset(
-				x - item.Size.X.Offset / 2,
-				(48 - item.Size.Y.Offset) / 2
-			)
+		local function setSegment(item, startX, endX, duration)
+			local rawWidth = endX - startX
+			item.Visible = rawWidth > 0
+			if rawWidth <= 0 then return end
+			local width = math.max(8, math.round(rawWidth))
+			local x = math.round((startX + endX - width) / 2)
+			x = math.clamp(x, 0, math.max(0, target.AbsoluteSize.X - width))
+			animate(item, {
+				Position = UDim2.fromOffset(x, 20),
+				Size = UDim2.fromOffset(width, 8),
+			}, duration)
 		end
 
-		local function render()
+		local function placeHandle(item, x, duration)
+			animate(item, {
+				Position = UDim2.fromOffset(math.round(x), 24),
+			}, duration)
+		end
+
+		local function render(duration)
+			duration = duration or 0
 			local width = target.AbsoluteSize.X
 			if width <= 0 then
 				task.defer(render)
@@ -589,29 +649,29 @@ function Window.new(options)
 
 			local x1 = fraction(variant == "Range" and lower or value) * width
 			local x2 = fraction(upper) * width
-			placeHandle(firstHandle, x1)
+			placeHandle(firstHandle, x1, duration)
 
 			if variant == "Range" then
-				placeHandle(secondHandle, x2)
-				setSegment(left, 0, math.max(0, x1 - 12))
-				setSegment(active, math.min(width, x1 + 12), math.max(0, x2 - 12))
-				setSegment(right, math.min(width, x2 + 12), width)
+				placeHandle(secondHandle, x2, duration)
+				setSegment(left, 0, math.max(0, x1 - 12), duration)
+				setSegment(active, math.min(width, x1 + 12), math.max(0, x2 - 12), duration)
+				setSegment(right, math.min(width, x2 + 12), width, duration)
 			elseif variant == "Centered" then
 				local center = width / 2
 				if x1 < center then
-					setSegment(left, 0, math.max(0, x1 - 12))
-					setSegment(active, math.min(width, x1 + 12), center)
-					setSegment(right, center, width)
+					setSegment(left, 0, math.max(0, x1 - 12), duration)
+					setSegment(active, math.min(width, x1 + 12), center, duration)
+					setSegment(right, center, width, duration)
 				else
-					setSegment(left, 0, center)
-					setSegment(active, center, math.max(0, x1 - 12))
-					setSegment(right, math.min(width, x1 + 12), width)
+					setSegment(left, 0, center, duration)
+					setSegment(active, center, math.max(0, x1 - 12), duration)
+					setSegment(right, math.min(width, x1 + 12), width, duration)
 				end
 			else
-				setSegment(left, 0, math.max(0, x1 - 12))
+				setSegment(left, 0, math.max(0, x1 - 12), duration)
 				left.BackgroundColor3 = Theme.Accent
 				active.Visible = false
-				setSegment(right, math.min(width, x1 + 12), width)
+				setSegment(right, math.min(width, x1 + 12), width, duration)
 			end
 		end
 
@@ -633,13 +693,14 @@ function Window.new(options)
 				slider.Value = value
 				if callback then callback(value) end
 			end
-			render()
+			render(0.06)
 		end
 
 		local function pressHandle(item, pressed)
-			item.Size = UDim2.fromOffset(pressed and 18 or 16, pressed and 18 or 16)
-			item.BackgroundColor3 = pressed and Theme.AccentHover or Theme.Accent
-			render()
+			animate(item, {
+				Size = UDim2.fromOffset(pressed and 18 or 16, pressed and 18 or 16),
+				BackgroundColor3 = pressed and Theme.AccentHover or Theme.Accent,
+			}, 0.12)
 		end
 
 		table.insert(window._connections, target.InputBegan:Connect(function(input)
@@ -678,7 +739,7 @@ function Window.new(options)
 		function slider:SetValue(nextValue, silent)
 			value = snap(tonumber(nextValue) or value)
 			self.Value = value
-			render()
+			render(0.18)
 			if not silent and callback then callback(value) end
 		end
 
@@ -687,7 +748,7 @@ function Window.new(options)
 			upper = snap(tonumber(nextUpper) or upper)
 			if lower > upper then lower, upper = upper, lower end
 			self.Lower, self.Upper = lower, upper
-			render()
+			render(0.18)
 			if not silent and callback then callback(lower, upper) end
 		end
 
