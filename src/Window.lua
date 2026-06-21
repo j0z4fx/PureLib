@@ -218,44 +218,6 @@ function Window.new(options)
 		pageDividers[index] = dividers
 	end
 
-	local groupBox = Instance.new("Frame")
-	groupBox.Name = "DemoGroupBox"
-	groupBox.Position = UDim2.fromOffset(0, 16)
-	groupBox.Size = UDim2.new(1, 0, 0, 144)
-	groupBox.BackgroundColor3 = Theme.Surface
-	groupBox.BorderSizePixel = 0
-	groupBox.Parent = pageColumns[1][1]
-	corner(groupBox, 12)
-
-	local groupStroke = Instance.new("UIStroke")
-	groupStroke.Color = Theme.Border2
-	groupStroke.Thickness = 1
-	groupStroke.Parent = groupBox
-
-	local groupTitle = Instance.new("TextLabel")
-	groupTitle.BackgroundTransparency = 1
-	groupTitle.Position = UDim2.fromOffset(16, 12)
-	groupTitle.Size = UDim2.new(1, -32, 0, 24)
-	groupTitle.Font = Enum.Font.GothamSemibold
-	groupTitle.Text = "Demo group"
-	groupTitle.TextColor3 = Theme.Text
-	groupTitle.TextSize = 16
-	groupTitle.TextXAlignment = Enum.TextXAlignment.Left
-	groupTitle.Parent = groupBox
-
-	local groupBody = Instance.new("TextLabel")
-	groupBody.BackgroundTransparency = 1
-	groupBody.Position = UDim2.fromOffset(16, 44)
-	groupBody.Size = UDim2.new(1, -32, 0, 40)
-	groupBody.Font = Enum.Font.Gotham
-	groupBody.Text = "Outlined card + label + supporting text"
-	groupBody.TextColor3 = Theme.Muted
-	groupBody.TextSize = 14
-	groupBody.TextWrapped = true
-	groupBody.TextXAlignment = Enum.TextXAlignment.Left
-	groupBody.TextYAlignment = Enum.TextYAlignment.Top
-	groupBody.Parent = groupBox
-
 	local rail = Instance.new("Frame")
 	rail.Name = "NavigationRail"
 	rail.Size = UDim2.new(0, 80, 1, 0)
@@ -369,12 +331,67 @@ function Window.new(options)
 	self.Containers = containers
 	self.PageColumns = pageColumns
 	self.PageDividers = pageDividers
-	self.DemoGroupBox = groupBox
+	self._columnElementY = {}
+	self.AddDivider = function(window, tabIndex, columnIndex)
+		local column = assert(window.PageColumns[tabIndex] and window.PageColumns[tabIndex][columnIndex], "Invalid tab or column")
+		window._columnElementY[tabIndex] = window._columnElementY[tabIndex] or {}
+		local y = window._columnElementY[tabIndex][columnIndex] or 16
+
+		local divider = Instance.new("Frame")
+		divider.Name = "Divider"
+		divider.Position = UDim2.fromOffset(0, y)
+		divider.Size = UDim2.new(1, 0, 0, 1)
+		divider.BackgroundColor3 = Theme.Border2
+		divider.BorderSizePixel = 0
+		divider.Parent = column
+
+		window._columnElementY[tabIndex][columnIndex] = y + 17
+		return divider
+	end
+	self.AddTitle = function(window, tabIndex, columnIndex, text)
+		local column = assert(window.PageColumns[tabIndex] and window.PageColumns[tabIndex][columnIndex], "Invalid tab or column")
+		window._columnElementY[tabIndex] = window._columnElementY[tabIndex] or {}
+		local y = window._columnElementY[tabIndex][columnIndex] or 16
+
+		local title = Instance.new("Frame")
+		title.Name = "Title"
+		title.Position = UDim2.fromOffset(0, y)
+		title.Size = UDim2.new(1, 0, 0, 20)
+		title.BackgroundTransparency = 1
+		title.Parent = column
+
+		local line = Instance.new("Frame")
+		line.AnchorPoint = Vector2.new(0, 0.5)
+		line.Position = UDim2.fromScale(0, 0.5)
+		line.Size = UDim2.new(1, 0, 0, 1)
+		line.BackgroundColor3 = Theme.Border2
+		line.BorderSizePixel = 0
+		line.Parent = title
+
+		local label = Instance.new("TextLabel")
+		label.AnchorPoint = Vector2.new(0.5, 0.5)
+		label.Position = UDim2.fromScale(0.5, 0.5)
+		label.AutomaticSize = Enum.AutomaticSize.X
+		label.Size = UDim2.fromOffset(0, 20)
+		label.BackgroundColor3 = Theme.Surface
+		label.BorderSizePixel = 0
+		label.Font = Enum.Font.GothamMedium
+		label.Text = "  " .. tostring(text) .. "  "
+		label.TextColor3 = Theme.Muted
+		label.TextSize = 12
+		label.ZIndex = 2
+		label.Parent = title
+
+		window._columnElementY[tabIndex][columnIndex] = y + 36
+		return title
+	end
 	self.NavigationRail = rail
 	self.NavigationButtons = navigationButtons
 	self.SelectPage = function(_, index)
 		selectPage(math.clamp(math.floor(index), 1, #containers))
 	end
+	self:AddTitle(1, 1, "Demo title")
+	self:AddDivider(1, 1)
 	self.Parent = guiParent
 	self.Theme = Theme
 
