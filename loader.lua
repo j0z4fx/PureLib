@@ -626,7 +626,7 @@ function Window.new(options)
 
 		local label = Instance.new("TextLabel")
 		label.BackgroundTransparency = 1
-		label.Size = UDim2.new(1, -56, 1, 0)
+		label.Size = UDim2.new(1, -52, 1, 0)
 		label.Font = Enum.Font.Gotham
 		label.Text = tostring(text)
 		label.TextColor3 = Theme.Text
@@ -645,10 +645,10 @@ function Window.new(options)
 		local track = Instance.new("Frame")
 		track.AnchorPoint = Vector2.new(0.5, 0.5)
 		track.Position = UDim2.fromScale(0.5, 0.5)
-		track.Size = UDim2.fromOffset(40, 24)
+		track.Size = UDim2.fromOffset(32, 20)
 		track.BorderSizePixel = 0
 		track.Parent = target
-		corner(track, 12)
+		corner(track, 10)
 
 		local outline = Instance.new("UIStroke")
 		outline.Thickness = 2
@@ -658,7 +658,7 @@ function Window.new(options)
 		local handle = Instance.new("Frame")
 		handle.BorderSizePixel = 0
 		handle.Parent = track
-		corner(handle, 9)
+		corner(handle, 8)
 
 		local value = default == true
 		local function render(animated)
@@ -670,8 +670,8 @@ function Window.new(options)
 				Color = value and Theme.Accent or Theme.BorderHot,
 			}):Play()
 			TweenService:Create(handle, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-				Position = value and UDim2.fromOffset(20, 3) or UDim2.fromOffset(6, 6),
-				Size = value and UDim2.fromOffset(18, 18) or UDim2.fromOffset(12, 12),
+				Position = value and UDim2.fromOffset(14, 2) or UDim2.fromOffset(5, 5),
+				Size = value and UDim2.fromOffset(16, 16) or UDim2.fromOffset(10, 10),
 				BackgroundColor3 = value and Theme.Panel or Theme.BorderHot,
 			}):Play()
 		end
@@ -698,6 +698,240 @@ function Window.new(options)
 		window._columnElementY[tabIndex][columnIndex] = y + 56
 		return toggle
 	end
+	local function addSlider(window, tabIndex, columnIndex, text, options, variant, callback)
+		options = options or {}
+		local column = assert(window.PageColumns[tabIndex] and window.PageColumns[tabIndex][columnIndex], "Invalid tab or column")
+		window._columnElementY[tabIndex] = window._columnElementY[tabIndex] or {}
+		local y = window._columnElementY[tabIndex][columnIndex] or 16
+		local minimum = tonumber(options.Min) or 0
+		local maximum = tonumber(options.Max) or 100
+		local step = math.max(tonumber(options.Step) or 1, 0.0001)
+		assert(maximum > minimum, "Slider Max must be greater than Min")
+
+		local row = Instance.new("Frame")
+		row.Name = variant .. "Slider"
+		row.Position = UDim2.fromOffset(0, y)
+		row.Size = UDim2.new(1, 0, 0, 72)
+		row.BackgroundTransparency = 1
+		row.Parent = column
+
+		local label = Instance.new("TextLabel")
+		label.BackgroundTransparency = 1
+		label.Size = UDim2.new(1, 0, 0, 20)
+		label.Font = Enum.Font.Gotham
+		label.Text = tostring(text)
+		label.TextColor3 = Theme.Text
+		label.TextSize = 14
+		label.TextXAlignment = Enum.TextXAlignment.Left
+		label.Parent = row
+
+		local target = Instance.new("Frame")
+		target.Position = UDim2.fromOffset(0, 24)
+		target.Size = UDim2.new(1, 0, 0, 48)
+		target.Active = true
+		target.BackgroundTransparency = 1
+		target.Parent = row
+
+		local function segment(name, color)
+			local item = Instance.new("Frame")
+			item.Name = name
+			item.Position = UDim2.fromOffset(0, 16)
+			item.Size = UDim2.fromOffset(0, 16)
+			item.BackgroundColor3 = color
+			item.BorderSizePixel = 0
+			item.Parent = target
+			corner(item, 8)
+			return item
+		end
+
+		local left = segment("LeftTrack", Theme.Surface3)
+		local active = segment("ActiveTrack", Theme.Accent)
+		local right = segment("RightTrack", Theme.Surface3)
+
+		local function makeHandle(name)
+			local item = Instance.new("Frame")
+			item.Name = name
+			item.Size = UDim2.fromOffset(4, 44)
+			item.BackgroundColor3 = Theme.Accent
+			item.BorderSizePixel = 0
+			item.ZIndex = 2
+			item.Parent = target
+			corner(item, 2)
+			return item
+		end
+
+		local firstHandle = makeHandle("Handle")
+		local secondHandle = variant == "Range" and makeHandle("EndHandle") or nil
+
+		for _, side in ipairs({ 0, 1 }) do
+			local stop = Instance.new("Frame")
+			stop.Name = "StopIndicator"
+			stop.AnchorPoint = Vector2.new(side, 0.5)
+			stop.Position = UDim2.new(side, side == 0 and 6 or -6, 0.5, 0)
+			stop.Size = UDim2.fromOffset(4, 4)
+			stop.BackgroundColor3 = Theme.BorderHot
+			stop.BorderSizePixel = 0
+			stop.ZIndex = 3
+			stop.Parent = target
+			corner(stop, 2)
+		end
+
+		local function snap(value)
+			return math.clamp(minimum + math.floor(((value - minimum) / step) + 0.5) * step, minimum, maximum)
+		end
+
+		local value = snap(tonumber(options.Value) or (variant == "Centered" and (minimum + maximum) / 2 or minimum + (maximum - minimum) * 0.5))
+		local lower = snap(tonumber(options.Lower) or minimum + (maximum - minimum) * 0.25)
+		local upper = snap(tonumber(options.Upper) or minimum + (maximum - minimum) * 0.75)
+		if lower > upper then
+			lower, upper = upper, lower
+		end
+
+		local slider = {
+			Frame = row,
+			Track = target,
+			ActiveTrack = active,
+			Handle = firstHandle,
+			EndHandle = secondHandle,
+			Value = value,
+			Lower = lower,
+			Upper = upper,
+		}
+
+		local function fraction(number)
+			return (number - minimum) / (maximum - minimum)
+		end
+
+		local function setSegment(item, startX, endX)
+			item.Visible = endX > startX
+			item.Position = UDim2.fromOffset(startX, 16)
+			item.Size = UDim2.fromOffset(math.max(0, endX - startX), 16)
+		end
+
+		local function render()
+			local width = target.AbsoluteSize.X
+			if width <= 0 then
+				task.defer(render)
+				return
+			end
+
+			local x1 = fraction(variant == "Range" and lower or value) * width
+			local x2 = fraction(upper) * width
+			firstHandle.Position = UDim2.fromOffset(x1 - firstHandle.Size.X.Offset / 2, 2)
+
+			if variant == "Range" then
+				secondHandle.Position = UDim2.fromOffset(x2 - secondHandle.Size.X.Offset / 2, 2)
+				setSegment(left, 0, math.max(0, x1 - 8))
+				setSegment(active, math.min(width, x1 + 8), math.max(0, x2 - 8))
+				setSegment(right, math.min(width, x2 + 8), width)
+			elseif variant == "Centered" then
+				local center = width / 2
+				if x1 < center then
+					setSegment(left, 0, math.max(0, x1 - 8))
+					setSegment(active, math.min(width, x1 + 8), center)
+					setSegment(right, center, width)
+				else
+					setSegment(left, 0, center)
+					setSegment(active, center, math.max(0, x1 - 8))
+					setSegment(right, math.min(width, x1 + 8), width)
+				end
+			else
+				setSegment(left, 0, math.max(0, x1 - 8))
+				left.BackgroundColor3 = Theme.Accent
+				active.Visible = false
+				setSegment(right, math.min(width, x1 + 8), width)
+			end
+		end
+
+		local dragging
+		local function updateFromX(screenX)
+			local normalized = math.clamp((screenX - target.AbsolutePosition.X) / target.AbsoluteSize.X, 0, 1)
+			local nextValue = snap(minimum + normalized * (maximum - minimum))
+
+			if variant == "Range" then
+				if dragging == "lower" then
+					lower = math.min(nextValue, upper)
+				else
+					upper = math.max(nextValue, lower)
+				end
+				slider.Lower, slider.Upper = lower, upper
+				if callback then callback(lower, upper) end
+			else
+				value = nextValue
+				slider.Value = value
+				if callback then callback(value) end
+			end
+			render()
+		end
+
+		local function pressHandle(item, pressed)
+			item.Size = UDim2.fromOffset(pressed and 2 or 4, 44)
+			render()
+		end
+
+		table.insert(window._connections, target.InputBegan:Connect(function(input)
+			if input.UserInputType ~= Enum.UserInputType.MouseButton1
+				and input.UserInputType ~= Enum.UserInputType.Touch
+			then return end
+
+			if variant == "Range" then
+				local clicked = math.clamp((input.Position.X - target.AbsolutePosition.X) / target.AbsoluteSize.X, 0, 1)
+				dragging = math.abs(clicked - fraction(lower)) <= math.abs(clicked - fraction(upper)) and "lower" or "upper"
+				pressHandle(dragging == "lower" and firstHandle or secondHandle, true)
+			else
+				dragging = "value"
+				pressHandle(firstHandle, true)
+			end
+			updateFromX(input.Position.X)
+		end))
+
+		table.insert(window._connections, UserInputService.InputChanged:Connect(function(input)
+			if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
+				or input.UserInputType == Enum.UserInputType.Touch)
+			then
+				updateFromX(input.Position.X)
+			end
+		end))
+
+		table.insert(window._connections, UserInputService.InputEnded:Connect(function(input)
+			if dragging and (input.UserInputType == Enum.UserInputType.MouseButton1
+				or input.UserInputType == Enum.UserInputType.Touch)
+			then
+				pressHandle(dragging == "upper" and secondHandle or firstHandle, false)
+				dragging = nil
+			end
+		end))
+
+		function slider:SetValue(nextValue, silent)
+			value = snap(tonumber(nextValue) or value)
+			self.Value = value
+			render()
+			if not silent and callback then callback(value) end
+		end
+
+		function slider:SetRange(nextLower, nextUpper, silent)
+			lower = snap(tonumber(nextLower) or lower)
+			upper = snap(tonumber(nextUpper) or upper)
+			if lower > upper then lower, upper = upper, lower end
+			self.Lower, self.Upper = lower, upper
+			render()
+			if not silent and callback then callback(lower, upper) end
+		end
+
+		table.insert(window._connections, target:GetPropertyChangedSignal("AbsoluteSize"):Connect(render))
+		render()
+		window._columnElementY[tabIndex][columnIndex] = y + 80
+		return slider
+	end
+	self.AddSlider = function(window, tabIndex, columnIndex, text, options, callback)
+		return addSlider(window, tabIndex, columnIndex, text, options, "Standard", callback)
+	end
+	self.AddCenteredSlider = function(window, tabIndex, columnIndex, text, options, callback)
+		return addSlider(window, tabIndex, columnIndex, text, options, "Centered", callback)
+	end
+	self.AddRangeSlider = function(window, tabIndex, columnIndex, text, options, callback)
+		return addSlider(window, tabIndex, columnIndex, text, options, "Range", callback)
+	end
 	self.NavigationRail = rail
 	self.NavigationButtons = navigationButtons
 	self.SelectPage = function(_, index)
@@ -706,6 +940,9 @@ function Window.new(options)
 	self:AddTitle(1, 1, "Demo title")
 	self:AddDivider(1, 1)
 	self.DemoToggle = self:AddToggle(1, 1, "Demo toggle", false)
+	self.DemoSlider = self:AddSlider(1, 2, "Standard slider", { Value = 40 })
+	self.DemoCenteredSlider = self:AddCenteredSlider(1, 2, "Centered slider", { Value = 65 })
+	self.DemoRangeSlider = self:AddRangeSlider(1, 2, "Range slider", { Lower = 25, Upper = 75 })
 	self.Parent = guiParent
 	self.Theme = Theme
 	return self
