@@ -293,8 +293,8 @@ function Window.new(options)
 
 	local content = Instance.new("Frame")
 	content.Name = "Content"
-	content.Position = UDim2.fromOffset(48, 0)
-	content.Size = UDim2.new(1, -48, 1, 0)
+	content.Position = UDim2.fromOffset(80, 0)
+	content.Size = UDim2.new(1, -80, 1, 0)
 	content.BackgroundTransparency = 1
 	content.BorderSizePixel = 0
 	content.ClipsDescendants = true
@@ -307,15 +307,7 @@ function Window.new(options)
 	contentPadding.PaddingRight = UDim.new(0, 16)
 	contentPadding.Parent = content
 
-	local contentLayout = Instance.new("UIListLayout")
-	contentLayout.FillDirection = Enum.FillDirection.Horizontal
-	contentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
-	contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	contentLayout.Padding = UDim.new(0, 8)
-	contentLayout.Parent = content
-
 	local containerColors = {
-		Color3.fromRGB(239, 68, 68),
 		Color3.fromRGB(34, 197, 94),
 		Color3.fromRGB(59, 130, 246),
 		Color3.fromRGB(234, 179, 8),
@@ -325,28 +317,87 @@ function Window.new(options)
 	for index, color in ipairs(containerColors) do
 		local container = Instance.new("Frame")
 		container.Name = "Container" .. index
-		container.LayoutOrder = index
-		container.Size = index == 1
-			and UDim2.new(0, 48, 1, 0)
-			or UDim2.new(1 / 3, -16 / 3, 1, 0)
+		container.Size = UDim2.fromScale(1, 1)
 		container.BackgroundColor3 = color
 		container.BorderSizePixel = 0
-		container.Parent = index == 1 and root or content
-
-		if index == 1 then
-			container.BackgroundTransparency = 1
-			g3Surface(container, color, 18)
-
-			local squareRightEdge = Instance.new("Frame")
-			squareRightEdge.Position = UDim2.fromOffset(18, 0)
-			squareRightEdge.Size = UDim2.new(1, -18, 1, 0)
-			squareRightEdge.BackgroundColor3 = color
-			squareRightEdge.BorderSizePixel = 0
-			squareRightEdge.Parent = container
-		end
-
+		container.Visible = index == 1
+		container.Parent = content
 		table.insert(containers, container)
 	end
+
+	local rail = Instance.new("Frame")
+	rail.Name = "NavigationRail"
+	rail.Size = UDim2.new(0, 80, 1, 0)
+	rail.BackgroundTransparency = 1
+	rail.BorderSizePixel = 0
+	rail.Parent = root
+	g3Surface(rail, Theme.Panel, 18)
+
+	local squareRightEdge = Instance.new("Frame")
+	squareRightEdge.Position = UDim2.fromOffset(18, 0)
+	squareRightEdge.Size = UDim2.new(1, -18, 1, 0)
+	squareRightEdge.BackgroundColor3 = Theme.Panel
+	squareRightEdge.BorderSizePixel = 0
+	squareRightEdge.Parent = rail
+
+	local navigation = Instance.new("Frame")
+	navigation.Name = "Destinations"
+	navigation.Position = UDim2.fromOffset(0, 24)
+	navigation.Size = UDim2.new(1, 0, 0, 192)
+	navigation.BackgroundTransparency = 1
+	navigation.Parent = rail
+
+	local navigationLayout = Instance.new("UIListLayout")
+	navigationLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	navigationLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	navigationLayout.Padding = UDim.new(0, 12)
+	navigationLayout.Parent = navigation
+
+	local navigationButtons = {}
+	local indicators = {}
+
+	local function selectPage(selected)
+		for index, container in ipairs(containers) do
+			local active = index == selected
+			container.Visible = active
+			indicators[index].BackgroundTransparency = active and 0 or 1
+			navigationButtons[index].TextColor3 = active and Theme.Text or Theme.Muted
+		end
+	end
+
+	for index = 1, #containers do
+		local button = Instance.new("TextButton")
+		button.Name = "Destination" .. index
+		button.LayoutOrder = index
+		button.Size = UDim2.new(1, 0, 0, 56)
+		button.BackgroundTransparency = 1
+		button.Font = Enum.Font.GothamSemibold
+		button.Text = tostring(index)
+		button.TextColor3 = Theme.Muted
+		button.TextSize = 16
+		button.ZIndex = 3
+		button.Parent = navigation
+
+		local indicator = Instance.new("Frame")
+		indicator.Name = "ActiveIndicator"
+		indicator.AnchorPoint = Vector2.new(0.5, 0.5)
+		indicator.Position = UDim2.fromScale(0.5, 0.5)
+		indicator.Size = UDim2.fromOffset(56, 32)
+		indicator.BackgroundColor3 = Theme.Surface3
+		indicator.BackgroundTransparency = 1
+		indicator.BorderSizePixel = 0
+		indicator.ZIndex = 2
+		indicator.Parent = button
+		corner(indicator, 16)
+
+		table.insert(navigationButtons, button)
+		table.insert(indicators, indicator)
+		table.insert(self._connections, button.MouseButton1Click:Connect(function()
+			selectPage(index)
+		end))
+	end
+
+	selectPage(1)
 
 	local dragging = false
 	local dragStart
@@ -392,6 +443,11 @@ function Window.new(options)
 	self.Root = root
 	self.Content = content
 	self.Containers = containers
+	self.NavigationRail = rail
+	self.NavigationButtons = navigationButtons
+	self.SelectPage = function(_, index)
+		selectPage(math.clamp(math.floor(index), 1, #containers))
+	end
 	self.Parent = guiParent
 	self.Theme = Theme
 	return self
