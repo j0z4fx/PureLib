@@ -772,6 +772,7 @@ function Window.new(options)
 			stop.BackgroundColor3 = Theme.BorderHot
 			stop.BorderSizePixel = 0
 			stop.ZIndex = 3
+			stop.Visible = variant ~= "Standard" or side == 1
 			stop.Parent = target
 			corner(stop, 2)
 		end
