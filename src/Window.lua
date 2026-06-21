@@ -264,7 +264,7 @@ function Window.new(options)
 			container.Visible = active
 			indicators[index].BackgroundTransparency = active and 0 or 1
 			navigationIcons[index].ImageColor3 = active and Theme.Panel or Theme.Muted
-			navigationLabels[index].TextColor3 = active and Theme.Panel or Theme.Muted
+			navigationLabels[index].TextColor3 = active and Theme.Text or Theme.Muted
 		end
 	end
 
@@ -404,7 +404,7 @@ function Window.new(options)
 
 		local label = Instance.new("TextLabel")
 		label.BackgroundTransparency = 1
-		label.Size = UDim2.new(1, -68, 1, 0)
+		label.Size = UDim2.new(1, -56, 1, 0)
 		label.Font = Enum.Font.Gotham
 		label.Text = tostring(text)
 		label.TextColor3 = Theme.Text
@@ -415,7 +415,7 @@ function Window.new(options)
 		local target = Instance.new("Frame")
 		target.AnchorPoint = Vector2.new(1, 0.5)
 		target.Position = UDim2.fromScale(1, 0.5)
-		target.Size = UDim2.fromOffset(52, 48)
+		target.Size = UDim2.fromOffset(48, 48)
 		target.Active = true
 		target.BackgroundTransparency = 1
 		target.Parent = row
@@ -423,10 +423,10 @@ function Window.new(options)
 		local track = Instance.new("Frame")
 		track.AnchorPoint = Vector2.new(0.5, 0.5)
 		track.Position = UDim2.fromScale(0.5, 0.5)
-		track.Size = UDim2.fromOffset(52, 32)
+		track.Size = UDim2.fromOffset(40, 24)
 		track.BorderSizePixel = 0
 		track.Parent = target
-		corner(track, 16)
+		corner(track, 12)
 
 		local outline = Instance.new("UIStroke")
 		outline.Thickness = 2
@@ -436,7 +436,7 @@ function Window.new(options)
 		local handle = Instance.new("Frame")
 		handle.BorderSizePixel = 0
 		handle.Parent = track
-		corner(handle, 14)
+		corner(handle, 9)
 
 		local value = default == true
 		local function render(animated)
@@ -448,8 +448,8 @@ function Window.new(options)
 				Color = value and Theme.Accent or Theme.BorderHot,
 			}):Play()
 			TweenService:Create(handle, TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-				Position = value and UDim2.fromOffset(24, 4) or UDim2.fromOffset(8, 8),
-				Size = value and UDim2.fromOffset(24, 24) or UDim2.fromOffset(16, 16),
+				Position = value and UDim2.fromOffset(20, 3) or UDim2.fromOffset(6, 6),
+				Size = value and UDim2.fromOffset(18, 18) or UDim2.fromOffset(12, 12),
 				BackgroundColor3 = value and Theme.Panel or Theme.BorderHot,
 			}):Play()
 		end
